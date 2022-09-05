@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 import org.zeromq.*;
 import org.zeromq.ZMQ.Socket;
 
@@ -13,8 +15,10 @@ public class Client {
 				
 				byte[] response = socket.recv();
 				
-				System.out.println("Response from server: " + new String(response, ZMQ.CHARSET)); 
-				
+				String returnedHash = new String(response, ZMQ.CHARSET);
+				ArrayList<String> students = new ArrayList<String>();
+				//students.add(returnedHash.endsWith());
+				System.out.println("Queue\n" + returnedHash);
 			}
 		}
 		else {
