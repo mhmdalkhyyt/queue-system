@@ -1,28 +1,38 @@
 import zmq
+from time import sleep
+
+
+def print_queue(queue_msg):
+    print("Printing queue")
+    for i in queue_msg:
+        print(i)
+
 
 context = zmq.Context()
 socket = context.socket(zmq.DEALER)
 socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
 
-socket.send_json({'subscribe': True})
-
-socket.send_json({'enterQueue': True, 'name':'Testnamn'})
-
+socket.send_json({'enterQueue': True, 'name': 'Testnamn'})
 message = socket.recv_json()
-
 print(message)
-# socket.setsockopt_string(zmq.SUBSCRIBE, '')
-
-# thisName = {
-#    "enterQueue": "true",
-#    "name": "<Testnamn>"
-#}
+socket.send_json({'subscribe': True})
+queue_msg = socket.recv_json()
+print_queue(queue_msg)
 
 
-#def send_name():
-#    socket.send_json(thisName)
+while True:
+    message = socket.recv_json()
 
-#
-# while (True):
-#     message = socket.recv_pyobj()
-#     print(message)
+    if 'ticket' in message:
+        print(message, sep='\n')
+
+    elif 'queue' in message:
+        #print(*message, sep='\n')
+        #print(message['name'])
+        print(type(message))
+        for dicts in message:
+            for key, value in message.items():
+                print(key, ' : ', value)
+
+    else:
+        socket.send_json('')
