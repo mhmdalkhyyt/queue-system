@@ -1,89 +1,80 @@
 import tkinter
 
 import zmq
-from time import sleep
 from tkinter import *
+import threading
 
 
-class GUI():
+class GUI(threading.Thread):
 
     def __init__(self):
-        self.window = Tk()
-        self.window.title("Queue client")
-        self.window.geometry('500x800')
-        self.label = tkinter.Label(self.window, text='Enter your name:', font=('Arial', 18))
-        self.label.pack(padx=20, pady=20)
+        threading.Thread.__init__(self)
+        self.queue_box = None
+        self.send_button = None
+        self.name_box = None
+        self.label = None
+        self.root = None
+        self.start()
 
-        self.name_box = tkinter.Text(self.window, height=1)
-        self.name_box.pack(padx=20)
+    def callback(self):
+        self.root.quit()
+        self.root.destroy()
 
-        self.send_button = tkinter.Button(self.window, text='Get in the queue', font=('Arial', 18),
-                                     command=self.queue_button)
-        self.send_button.pack(padx=20, pady=20)
-
-        self.queue_box = tkinter.Text(self.window, font=('Arial', 16))
-        self.queue_box.pack(padx=20)
-
-        self.window.mainloop()
-
-    def show_dict(self, d):
-        print('Inside show dict')
-        # for k, v in d.items():
-        #     print(d[k], d[v])
-        #     self.queuebox.insert(tkinter.END, "key = {}, val = {}\n".format(k, v))
+    def update_queue(self, d):
+        self.queue_box.delete(1.0, END)
+        for x in d:
+            self.queue_box.insert(END, x + '\n')
+        print(d)
 
     def queue_button(self):
-        name = self.name_box.get('1.0', tkinter.END)
-        print(name)
-        print('in button')
+        name = self.name_box.get(1.0, tkinter.END)
+        name = name[:-1]
         socket.send_json({'enterQueue': True, 'name': name})
-        # queue_msg = socket.recv_json()
-        #print(queue_msg)
+
+    def run(self):
+        self.root = Tk()
+        self.root.protocol("WM_DELETE_WINDOW", self.callback)
+        self.root.title("Queue client")
+        self.root.geometry('500x800')
+        self.label = tkinter.Label(self.root, text='Enter your name:', font=('Arial', 18))
+        self.label.pack(padx=20, pady=20)
+
+        self.name_box = tkinter.Text(self.root, height=1, width=15)
+        self.name_box.pack(padx=20)
+
+        self.send_button = tkinter.Button(self.root, text='Get in the queue', font=('Arial', 18),
+                                          command=self.queue_button)
+        self.send_button.pack(padx=20, pady=20)
+
+        self.queue_box = tkinter.Text(self.root, font=('Arial', 16))
+        self.queue_box.pack(padx=20)
+        self.root.mainloop()
 
 
 context = zmq.Context()
 socket = context.socket(zmq.DEALER)
 
-gui = GUI()
 socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
 socket.send_json({'subscribe': True})
-queue_msg = socket.recv_json()
-print(queue_msg)
-gui.show_dict(queue_msg)
+gui = GUI()
 
 
 while True:
     message = socket.recv_json()
-    gui.show_dict(message)
 
     if 'ticket' in message:
+        print('got ticket')
         print(message, sep='\n')
 
     elif 'queue' in message:
-        # print(*message, sep='\n')
-        # print(message['name'])
-        print(type(message))
-        gui.show_dict(message)
-        for dicts in message:
-            for key, value in message.items():
-                print(key, ' : ', value)
+        print('got queue')
+
+        x = [e['name'] for e in message['queue']]
+        gui.update_queue(x)
 
     else:
+        print('got heartbeat')
         socket.send_json('')
 
-#
-#
+
 # # source venv/bin/activate
-# def print_queue(queue_msg):
-#     print("Printing queue")
-#     for i in queue_msg:
-#         print(i)
-#
-#
-
-#
-#
-# message = socket.recv_json()
-# print(message)
-
-#
