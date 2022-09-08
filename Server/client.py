@@ -1,6 +1,6 @@
 import tkinter
-
 import zmq
+import os
 from tkinter import *
 import threading
 
@@ -17,14 +17,25 @@ class GUI(threading.Thread):
         self.start()
 
     def callback(self):
-        self.root.quit()
-        self.root.destroy()
+        os._exit(0)
 
     def update_queue(self, d):
-        self.queue_box.delete(1.0, END)
-        for x in d:
-            self.queue_box.insert(END, x + '\n')
-        print(d)
+
+        if self.queue_box is not None:
+            self.queue_box.delete(1.0, END)
+            user_name = self.name_box.get(1.0, tkinter.END)
+            user_name = user_name[:-1]
+            i = 1
+
+            for x in d:
+
+                if x == user_name:
+                    print('Same')
+                    self.queue_box.insert(END, str(i) + ': ' + x + '           <----- You' + '\n')
+                else:
+                    self.queue_box.insert(END, str(i) + ': ' + x + '\n')
+
+                i = i + 1
 
     def queue_button(self):
         name = self.name_box.get(1.0, tkinter.END)
@@ -48,16 +59,20 @@ class GUI(threading.Thread):
 
         self.queue_box = tkinter.Text(self.root, font=('Arial', 16))
         self.queue_box.pack(padx=20)
+        socket.send_json({'subscribe': True})
         self.root.mainloop()
 
 
 context = zmq.Context()
 socket = context.socket(zmq.DEALER)
 
-socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
-socket.send_json({'subscribe': True})
+# ------------------------------------------
+# Select the correct line for online or local communication
+# ------------------------------------------
+# socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
+socket.connect('tcp://127.0.0.1:7000')
+# ------------------------------------------
 gui = GUI()
-
 
 while True:
     message = socket.recv_json()
@@ -75,6 +90,5 @@ while True:
     else:
         print('got heartbeat')
         socket.send_json('')
-
 
 # # source venv/bin/activate
