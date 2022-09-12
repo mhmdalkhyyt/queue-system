@@ -30,7 +30,6 @@ class GUI(threading.Thread):
             for x in d:
 
                 if x == user_name:
-                    print('Same')
                     self.queue_box.insert(END, str(i) + ': ' + x + '           <----- You' + '\n')
                 else:
                     self.queue_box.insert(END, str(i) + ': ' + x + '\n')
@@ -69,8 +68,8 @@ socket = context.socket(zmq.DEALER)
 # ------------------------------------------
 # Select the correct line for online or local communication
 # ------------------------------------------
-socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
-# socket.connect('tcp://127.0.0.1:7000')
+# socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
+socket.connect('tcp://127.0.0.1:7000')
 # ------------------------------------------
 gui = GUI()
 

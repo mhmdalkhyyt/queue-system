@@ -2,6 +2,7 @@ import tkinter
 import zmq
 import os
 import queue
+import binascii
 from tkinter import *
 import threading
 
@@ -28,10 +29,10 @@ class GUI(threading.Thread):
         self.root = Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.callback)
         self.root.title("Queue server")
-        self.root.geometry('500x800')
+        self.root.geometry('500x600')
 
         # self.send_button = tkinter.Button(self.root, text='Remove next in queue', font=('Arial', 18),
-                                          # command=self.queue_button)
+        # command=self.queue_button)
         # self.send_button.pack(padx=20, pady=20)
 
         self.queue_box = tkinter.Text(self.root, font=('Arial', 16))
@@ -40,35 +41,62 @@ class GUI(threading.Thread):
         self.root.mainloop()
 
 
-help_queue = queue.Queue()
+help_queue = list
 context = zmq.Context()
-socket = context.socket(zmq.ROUTER)
 
 # ------------------------------------------
 # Select the correct line for online or local communication
 # ------------------------------------------
 # socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
+socket = context.socket(zmq.ROUTER)
 socket.bind('tcp://127.0.0.1:7000')
 # ------------------------------------------
 gui = GUI()
+subscribers = list
 
 while True:
-    message = socket.recv_json()
-    print('received')
-    print(message)
+    msg = socket.recv_multipart()
 
-    if 'enterQueue' in message:
-        print('got ticket')
-        print(message, sep='\n')
+    if 'subscribe' in msg[1].decode('ascii'):
+        if msg[0] in subscribers():
 
-    elif 'subscribe' in message:
-        print('got queue')
+            print('already in subs')
+        else:
+            subscribers.append(msg[0])
+            print('Added to subs')
+            # for x in range(len(subscribers())):
+            #     print(subscribers[x])
+            print(*subscribers)
+            print('................')
 
-        x = [e['name'] for e in message['queue']]
-        # gui.update_queue(x)
+    elif 'enterQueue' in msg[1].decode('ascii'):
+        if msg[0] in help_queue():
+            print('already in queue')
+        else:
+            print('Added to queue')
+            help_queue().append(msg[0])
+            message = msg[1].decode('ascii')
+            print(type(message))
+            print('................')
 
-    else:
-        print('got heartbeat')
-        #socket.send_json('')
+    # print(type(msg[0]))
+    # print(type(msg[1]))
+    # print(msg[0])
+    # print(msg[1].decode('ascii'))
+
+    #
+    # if
+    #     print('got ticket')
+    #     print(message, sep='\n')
+    #
+    # elif 'subscribe' in message:
+    #     print('got queue')
+    #
+    #     x = [e['name'] for e in message['queue']]
+    #     # gui.update_queue(x)
+    #
+    # else:
+    #     print('got heartbeat')
+    #     #socket.send_json('')
 
 # # source venv/bin/activate
