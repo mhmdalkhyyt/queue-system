@@ -1,7 +1,6 @@
 import tkinter
 import zmq
 import os
-import queue
 import binascii
 from tkinter import *
 import threading
@@ -20,7 +19,13 @@ class GUI(threading.Thread):
         os._exit(0)
 
     def update_queue(self, d):
-        pass
+        i=1
+        if self.queue_box is not None:
+            self.queue_box.delete(1.0, END)
+
+            for x in d:
+                self.queue_box.insert(END, str(i) + ': ' + x + '\n')
+                i = i + 1
 
     def queue_button(self):
         pass
@@ -41,7 +46,7 @@ class GUI(threading.Thread):
         self.root.mainloop()
 
 
-help_queue = list
+
 context = zmq.Context()
 
 # ------------------------------------------
@@ -52,32 +57,40 @@ socket = context.socket(zmq.ROUTER)
 socket.bind('tcp://127.0.0.1:7000')
 # ------------------------------------------
 gui = GUI()
-subscribers = list
+subscribers = list()
+help_queue = list()
 
 while True:
     msg = socket.recv_multipart()
+    msg_temp = msg[0]
+    msg_temp = binascii.hexlify(msg_temp).decode('ascii')
+    msg[0] = msg_temp
 
     if 'subscribe' in msg[1].decode('ascii'):
-        if msg[0] in subscribers():
+        if msg[0] in subscribers:
 
             print('already in subs')
         else:
             subscribers.append(msg[0])
-            print('Added to subs')
-            # for x in range(len(subscribers())):
-            #     print(subscribers[x])
-            print(*subscribers)
+            print(msg[0] + ' added to subs')
+            for x in range(len(subscribers)):
+                print(subscribers[x])
             print('................')
 
     elif 'enterQueue' in msg[1].decode('ascii'):
-        if msg[0] in help_queue():
+        if msg[0] in help_queue:
             print('already in queue')
         else:
-            print('Added to queue')
-            help_queue().append(msg[0])
+            print(msg[0] + ' added to queue')
+            help_queue.append(msg[0])
             message = msg[1].decode('ascii')
-            print(type(message))
+            print(message)
+            for x in range(len(help_queue)):
+                print(help_queue[x])
             print('................')
+            gui.update_queue(help_queue)
+            temp = '{\'queue\': [{\'name\': \'zsczs\', \'ticket\': 6}, {\'name\': \'test\', \'ticket\': 8}, {\'name\': \'Guasg\', \'ticket\': 9}, {\'name\': \'Gaston\nGistab\', \'ticket\': 10}'
+            socket.send_json(temp)
 
     # print(type(msg[0]))
     # print(type(msg[1]))
