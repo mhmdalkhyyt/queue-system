@@ -26,6 +26,9 @@ public class DSAssign1
     public static void main(String[] args) throws Exception
     {
         
+        String myName = "Zome";
+        Person student = new Person("0", myName);
+        
         if(args.length > 0){
             try (ZContext context = new ZContext()) {
                 Socket socket = context.createSocket(SocketType.DEALER);
@@ -34,7 +37,11 @@ public class DSAssign1
                 
                 String name = "Mometo";
                 ObjectMapper mapper = new ObjectMapper();
-                String payload = "{\"enterQueue\": true,\n" + " \"name\": \"Muhammed\"}";
+                
+               
+                
+                String payload = "{\"enterQueue\": true,\n" + " \"name\": \"" + student.getName() + "\"}";
+                
                 
                 
                 socket.send(payload);
@@ -42,6 +49,10 @@ public class DSAssign1
                 byte[] response = socket.recv();
                 System.out.println("Reply from server: " + new String(response, ZMQ.CHARSET));
                 
+
+                //Set into ListObj
+                
+                Map<String, Object> studentMap = mapper.readValue(new String(response, ZMQ.CHARSET)), new TypeReference<Map<String,Object>>(){});
                 
             }
         }
