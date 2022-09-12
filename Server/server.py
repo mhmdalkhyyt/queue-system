@@ -30,9 +30,9 @@ class GUI(threading.Thread):
         self.root.title("Queue server")
         self.root.geometry('500x800')
 
-        self.send_button = tkinter.Button(self.root, text='Remove next in queue', font=('Arial', 18),
-                                          command=self.queue_button)
-        self.send_button.pack(padx=20, pady=20)
+        # self.send_button = tkinter.Button(self.root, text='Remove next in queue', font=('Arial', 18),
+                                          # command=self.queue_button)
+        # self.send_button.pack(padx=20, pady=20)
 
         self.queue_box = tkinter.Text(self.root, font=('Arial', 16))
         self.queue_box.pack(padx=20)
