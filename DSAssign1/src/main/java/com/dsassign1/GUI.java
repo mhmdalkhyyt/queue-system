@@ -4,22 +4,65 @@
  */
 package com.dsassign1;
 
+import javax.swing.*;
+
 /**
  *
  * @author muham
  */
 public class GUI extends javax.swing.JFrame {
 
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Confirm_Button;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+
+    private javax.swing.JTextField textfield = new JTextField(16);
+
+    private boolean request = false;
+
+
+    public boolean isRequest(){
+        return request;
+    }
+
+    private void setRequest(boolean r){
+        this.request = r;
+    }
+
+    public JTextField getTextfield() {
+        return textfield;
+    }
+
+    public void setTextfield(JTextField textfield) {
+        this.textfield = textfield;
+    }
+
+
+
+    public Person getStudentName() {
+        return studentName;
+    }
+
+    public void setStudentName(Person studentName) {
+        this.studentName = studentName;
+    }
+
+    private Person studentName = new Person("0", getTextfield().getText());
+
+
+    // End of variables declaration//GEN-END:variables
+
     /**
      * Creates new form GUI
      */
     public GUI() {
+        System.out.println("HGeöl");
         initComponents();
-         java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new GUI().setVisible(true);
-            }
-        });
+        this.setVisible(true);
+
     }
 
     /**
@@ -32,7 +75,19 @@ public class GUI extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
         Confirm_Button = new javax.swing.JButton();
+        //Label
+        JLabel JLNamePrompt = new JLabel("Name: ");
+        JLNamePrompt.setBounds(10,20,80,25);
+        jPanel1.add(JLNamePrompt);
+
+        //TextField
+
+        textfield.setBounds(100,20,165,25);
+        jPanel1.add(textfield);
+
+
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -40,8 +95,11 @@ public class GUI extends javax.swing.JFrame {
         Confirm_Button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Confirm_ButtonActionPerformed(evt);
+                setRequest(true);
+                System.out.println("Your name is: " + getTextfield().getText());
             }
         });
+
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -76,18 +134,18 @@ public class GUI extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+
+
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void Confirm_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Confirm_ButtonActionPerformed
         // TODO add your handling code here:
-        
+        setRequest(true);
         System.out.println("Hello World!");
     }//GEN-LAST:event_Confirm_ButtonActionPerformed
 
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton Confirm_Button;
-    private javax.swing.JPanel jPanel1;
-    // End of variables declaration//GEN-END:variables
+
 }
