@@ -29,39 +29,43 @@ public class DSAssign1
 {
     public static void main(String[] args) throws Exception
     {
-        
-        String myName = "Zome";
-        Person student = new Person("0", myName);
-        
-        if(args.length > 0){
-            try (ZContext context = new ZContext()) {
-                Socket socket = context.createSocket(SocketType.DEALER);
-                socket.connect(args[0]);
+       initGUI();
+        GUI gui = new GUI();
 
-                ObjectMapper mapper = new ObjectMapper();
-                
-                String payload = "{\"enterQueue\": true,\n" + " \"name\": \"" + student.getName() + "\"}";
+        //Person student = new Person("0", gui.getTextfield().getText());
+        System.out.println("Name for queue: " + gui.getStudentName().getName());
 
-                socket.send(payload);
-                
-                byte[] response = socket.recv();
-                System.out.println("Reply from server: " + new String(response, ZMQ.CHARSET));
-               
+        Thread.sleep(10000);
 
-                while(true){
-                    socket.send("{}");
-                    Thread.sleep(4000);
-                    System.out.println("4 secs passed, sending heartbeat");
+            if(args.length > 0){
+                try (ZContext context = new ZContext()) {
+                    Socket socket = context.createSocket(SocketType.DEALER);
+                    socket.connect(args[0]);
+
+                    String payload = "{\"enterQueue\": true,\n" + " \"name\": \"" + gui.getTextfield().getText() + "\"}";
+
+                    socket.send(payload);
+
+                    byte[] response = socket.recv();
+                    System.out.println("Reply from server: " + new String(response, ZMQ.CHARSET));
+
+
+                    while(true){
+                        socket.send("{}");
+                        Thread.sleep(4000);
+                        System.out.println("4 secs passed, sending heartbeat");
+
+                    }
 
                 }
-            }
 
+            }
+            else{
+                System.out.println("Please specify URL");
+
+            }
         }
-        else{
-            System.out.println("Please specify URL");
-        
-        }
-    }
+
 
     public static void sendHeartbeat(Socket socket){
         System.out.println("Trying to send heartbeat");
@@ -77,4 +81,10 @@ public class DSAssign1
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
         executorService.scheduleAtFixedRate(heartbeat, 0, 3, TimeUnit.SECONDS);
         }
+    public static void initGUI(){
+
+
+
     }
+};
+
