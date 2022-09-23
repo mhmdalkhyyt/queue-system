@@ -26,8 +26,7 @@ class GUI(threading.Thread):
 
             for x in d:
                 sliced_string = x[1]
-                sliced_json=json.loads(sliced_string)
-                #sliced_string = sliced_string[30:-2]
+                sliced_json = json.loads(sliced_string)
                 self.queue_box.insert(END, str(i) + ': ' + sliced_json['name'] + '\n')
                 i = i + 1
 
@@ -70,6 +69,10 @@ help_queue = list()
 
 while True:
     msg = backend_socket.recv_multipart()
+    msg_parsed = json.loads(msg[1])
+    print(msg_parsed)
+    print('Parsed')
+
     msg_temp = msg[0]
     ID = msg[0]
     msg_temp = binascii.hexlify(msg_temp).decode('ascii')

@@ -68,8 +68,8 @@ socket = context.socket(zmq.DEALER)
 # ------------------------------------------
 # Select the correct line for online or local communication
 # ------------------------------------------
-# socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
-socket.connect('tcp://127.0.0.1:7000')
+socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
+# socket.connect('tcp://127.0.0.1:7000')
 # ------------------------------------------
 gui = GUI()
 
