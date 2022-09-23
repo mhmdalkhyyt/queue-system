@@ -1,4 +1,6 @@
 import tkinter
+from time import sleep
+
 import zmq
 import os
 import binascii
@@ -44,6 +46,33 @@ class GUI(threading.Thread):
         self.root.mainloop()
 
 
+class QueueStudent():
+    def __init__(self, tnr, name, id):
+        self.Ticket = tnr
+        self.Name = name
+        self.ID = id  # flera ID
+
+    def getTicket(self):  # metod utan ID
+        tempo = {"ticket": self.Ticket, "name": self.Name}
+        self.sendprepr = json.dumps(str(tempo))
+        return [self.ID, bytes(self.sendprepr, 'UTF-8')]
+
+
+class QueueList:
+
+    def __init__(self):
+        self.listOfQueue = list()
+
+    def addToQueue(self, student):
+        self.listOfQueue.append(student)
+
+
+def heartbeat():
+    while (True):
+        sleep(5)
+        print('From heartbeat')
+
+
 context = zmq.Context()
 backend_socket = context.socket(zmq.ROUTER)
 # ------------------------------------------
@@ -62,49 +91,53 @@ def string_creator(mesg):
     return concMessage
 
 
+def send_queue():
+    for queuer in subscribers:
+        send_service(queuer, )
+
+
 # ------------------------------------------
-gui = GUI()
+queueDict = dict()
 subscribers = list()
 help_queue = list()
+ticketNumber = 1
+gui = GUI()
+heartThread = threading.Thread(target=heartbeat)
+heartThread.start()
 
 while True:
     msg = backend_socket.recv_multipart()
-    msg_parsed = json.loads(msg[1])
-    print(msg_parsed)
-    print('Parsed')
-
-    msg_temp = msg[0]
     ID = msg[0]
-    msg_temp = binascii.hexlify(msg_temp).decode('ascii')
-    msg[0] = msg_temp
+    msg_temp = msg[0]
+    msg[0] = binascii.hexlify(msg_temp).decode('ascii')
+    msg_temp = msg[1]
+    msg_temp = msg_temp.decode('ascii')
+    msg[1] = json.loads(msg_temp)
+    print(msg)
 
-    if 'subscribe' in msg[1].decode('ascii'):
-        if msg[0] in subscribers:
-
+    if "subscribe" in msg[1]:
+        if ID in subscribers:
             print('already in subs')
         else:
-            user = msg[1].decode('ascii')
-            subscribers.append(msg[0])
+            subscribers.append(ID)
             print(msg[0] + ' added to subs')
             print(subscribers)
             print('................')
 
-    elif 'enterQueue' in msg[1].decode('ascii'):
-        if msg[0] in help_queue:
+    elif 'enterQueue' in msg[1]:
+        if msg[1] in help_queue:
             print('already in queue')
         else:
-            user = msg[1].decode('ascii')
-            print(msg[0] + ' added to queue')
-            help_queue.append([msg[0], user])
-            message = msg[1].decode('ascii')
-            print(message)
-            for x in range(len(help_queue)):
-                print('Queue printout:')
-                print(help_queue[x])
-            print('................')
-            gui.update_queue(help_queue)
-            temp = '{\"queue\": [{\"name\": \"rrrrtttfff\", \"ticket\": 1}], \"supervisors\": [], \"serverId\": \"server5530\"}'
-            send_service([ID, bytes(temp, 'UTF-8')])
+            user = msg[1]['name']
+            print(user + ' added to queue')
+            help_queue.append(QueueStudent(ticketNumber, user, ID))
+            ticketNumber = ticketNumber + 1
+            send_service(help_queue[0].getTicket())
+            # sendprep = json.dumps(str(temp_dict))
+            # send_service([ID, bytes(sendprep, 'UTF-8')])
+            # sendList = {"queue", [{"name": "gibbe", "ticket": 15}]}
+            # sendprep = json.dumps(str(queueDict))
+            # send_service([ID, bytes(sendprep, 'UTF-8')])
 
     # print(type(msg[0]))
     # print(type(msg[1]))
