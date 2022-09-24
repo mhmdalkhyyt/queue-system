@@ -22,6 +22,9 @@ public class GUI {
     private JButton btnEnterQueue = new JButton();
     private JTextArea queueArea = new JTextArea();
 
+
+    private boolean enterQueue = false;
+
     public void init(){
         frame.setSize(400,500);
         frame.setVisible(true);
@@ -42,6 +45,7 @@ public class GUI {
             public void actionPerformed(ActionEvent evt) {
                 btnEnterQueueActionPerformed(evt);
                 System.out.println("Your name is: " + getNameTextField().getText());
+
             }
         });
         frame.add(btnEnterQueue);
@@ -70,8 +74,12 @@ public class GUI {
         this.queueArea.append(str);
     }
     private void btnEnterQueueActionPerformed(ActionEvent evt){
-
+        enterQueue = true;
     }
+    public boolean isEnterQueue() {
+        return enterQueue;
+    }
+
 
     public void queueAreaActionPerformed(ActionEvent evt){
         String text = queueArea.getText();

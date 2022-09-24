@@ -26,43 +26,24 @@ import java.util.concurrent.TimeUnit;
 
 public class DSAssign1
 {
-    static ArrayList<String> studentList = new ArrayList<>();
-    static JSONArray jsArr;
-    static GUI gui = new GUI();
-
-    static ClientLogic cl;
-
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
+        GUI gui = new GUI();
+        ClientLogic cLogic;
 
         gui.init();
 
             if(args.length > 0){
 
-                cl = new ClientLogic(args);
-                cl.run();
+                cLogic = new ClientLogic(args, gui);
+                cLogic.run();
             }
             else{
                 System.out.println("Please specify URL");
 
             }
-        }
 
 
-    public static void sendHeartbeat(Socket socket){
-        System.out.println("Trying to send heartbeat");
-        Runnable heartbeat = () -> {
-
-                String h = "{}";
-                socket.send(h);
-
-                System.out.println("helloo heartbeat");
-
-
-        };
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
-        executorService.scheduleAtFixedRate(heartbeat, 0, 3, TimeUnit.SECONDS);
-        }
+    }
 
 };
 
