@@ -23,7 +23,7 @@ public class GUI {
     private JTextArea queueArea = new JTextArea();
 
     public void init(){
-        frame.setSize(400,200);
+        frame.setSize(400,500);
         frame.setVisible(true);
         frame.setLayout(new FlowLayout());
 
@@ -46,8 +46,7 @@ public class GUI {
         });
         frame.add(btnEnterQueue);
 
-        queueArea.setText("Hello");
-        queueArea.append("Hello111");
+
         frame.add(queueArea);
 
 
@@ -68,10 +67,10 @@ public class GUI {
     }
 
     public void setQueueArea(String str) {
-        this.queueArea.setText(str);
+        this.queueArea.append(str);
     }
     private void btnEnterQueueActionPerformed(ActionEvent evt){
-        System.out.println("Hello im button");
+
     }
 
     public void queueAreaActionPerformed(ActionEvent evt){
