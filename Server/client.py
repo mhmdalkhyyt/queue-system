@@ -80,8 +80,8 @@ def heartbeat():
 # ------------------------------------------
 # Select the correct line for online or local communication
 # ------------------------------------------
-socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
-# socket.connect('tcp://127.0.0.1:7000')
+# socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
+socket.connect('tcp://127.0.0.1:7000')
 # ------------------------------------------
 gui = GUI()
 
@@ -94,7 +94,7 @@ while True:
     elif 'queue' in message:
         print('got queue')
         print(message)
-        x = [e['name'] for e in message['queue']]
+        x = [e["name"] for e in message['queue']]
         gui.update_queue(x)
 
 

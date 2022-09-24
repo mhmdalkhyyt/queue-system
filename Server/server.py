@@ -1,3 +1,9 @@
+# TODO en till kö för supervisors
+# TODO attendfunktion för supervisors typ pop()
+# TODO fixa formatet på den skickade kön
+# TODO heartbeatlyssnare, kanske en lista ihop med systemtid och ID?
+# TODO gränssnitt för supervisors
+
 import tkinter
 from time import sleep
 
@@ -27,9 +33,7 @@ class GUI(threading.Thread):
             self.queue_box.delete(1.0, END)
 
             for x in d:
-                sliced_string = x[1]
-                sliced_json = json.loads(sliced_string)
-                self.queue_box.insert(END, str(i) + ': ' + sliced_json['name'] + '\n')
+                self.queue_box.insert(END, str(i) + ': ' + x.getName() + '\n')
                 i = i + 1
 
     def queue_button(self):
@@ -46,16 +50,28 @@ class GUI(threading.Thread):
         self.root.mainloop()
 
 
-class QueueStudent():
-    def __init__(self, tnr, name, id):
+class QueuePerson():
+    def __init__(self, tnr, name, inID, type):
         self.Ticket = tnr
         self.Name = name
-        self.ID = id  # flera ID
+        self.ID = inID  # flera ID
+        self.QType = type
 
-    def getTicket(self):  # metod utan ID
-        tempo = {"ticket": self.Ticket, "name": self.Name}
+    def getTicketb(self):
+        tempo = {"name": self.Name, "ticket": self.Ticket}
         self.sendprepr = json.dumps(str(tempo))
-        return [self.ID, bytes(self.sendprepr, 'UTF-8')]
+        return [bytes(self.sendprepr, 'UTF-8')]
+
+    def getTicket(self):
+        tempo = {'name': self.Name, 'ticket': self.Ticket}
+        self.sendprepr = json.dumps(tempo)
+        return [self.sendprepr]
+
+    def getID(self):
+        return self.ID
+
+    def getName(self):
+        return self.Name
 
 
 class QueueList:
@@ -86,14 +102,15 @@ def send_service(mesg):
     backend_socket.send_multipart(mesg)
 
 
-def string_creator(mesg):
-    concMessage = '1wd'
-    return concMessage
+def send_queue(queuelist):
+    sendlist = list()
+    for x in queuelist:
+        sendlist.append(x.getTicket())
 
-
-def send_queue():
+    send_dict = {'queue': sendlist}
+    json_sendlist = json.dumps(send_dict)
     for queuer in subscribers:
-        send_service(queuer, )
+        send_service([queuer, bytes(json_sendlist, 'UTF-8')])
 
 
 # ------------------------------------------
@@ -130,9 +147,11 @@ while True:
         else:
             user = msg[1]['name']
             print(user + ' added to queue')
-            help_queue.append(QueueStudent(ticketNumber, user, ID))
+            help_queue.append(QueuePerson(ticketNumber, user, ID, 'Student'))
             ticketNumber = ticketNumber + 1
-            send_service(help_queue[0].getTicket())
+            send_service(help_queue[0].getTicketb())
+            gui.update_queue(help_queue)
+            send_queue(help_queue)
             # sendprep = json.dumps(str(temp_dict))
             # send_service([ID, bytes(sendprep, 'UTF-8')])
             # sendList = {"queue", [{"name": "gibbe", "ticket": 15}]}
