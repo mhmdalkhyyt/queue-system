@@ -11,6 +11,7 @@ import org.zeromq.ZMQ;
 public class ClientLogic {
     private String[] args;
     private GUI gui;
+    private String queueStringList = "";
 
 
     public ClientLogic(String[] argStr, GUI window){
@@ -23,8 +24,8 @@ public class ClientLogic {
 
         //For some reason ZMQ doesn't wait unless busy wait with thread.sleep
 
-        while(gui.isEnterQueue() == false){
-            //wait for button
+        while(!gui.isEnterQueue()){
+            //wait for request to stand in queue
             Thread.sleep(1);
         }
 
@@ -32,14 +33,13 @@ public class ClientLogic {
         ZMQ.Socket socket = context.createSocket(SocketType.DEALER);
         socket.connect(args[0]);
 
-        while (gui.isEnterQueue() == true){
+        while (gui.isEnterQueue()){
 
                 String subscribe = "{\"subscribe\": true }";
                 socket.send(subscribe);
 
 
                 String payload = "{\"enterQueue\": true,\n" + " \"name\": \"" + gui.getNameTextField().getText() + "\"}";
-                Person student = new Person("0", gui.getNameTextField().getText());
 
                 socket.send(payload);
 
@@ -52,11 +52,13 @@ public class ClientLogic {
                     socket.send("{}");
                     Thread.sleep(4000);
                     System.out.println("4 secs passed, sending heartbeat");
+                    gui.setQueueArea("");
+                    socket.send(subscribe);
+                    byte[] subResponse = socket.recv();
+                    handleJSON(new String(subResponse, ZMQ.CHARSET));
 
                 }
             }
-
-
     }
     public void handleJSON(String str){
         JSONObject jsonObject = new JSONObject(str);
@@ -65,13 +67,16 @@ public class ClientLogic {
         if(jsonObject.has("queue")) {
             jsArr = jsonObject.getJSONArray("queue");
 
-            String queueStringList = "";
-
+            System.out.println("Queue List is :" + jsArr);
             for(int i =0; i < jsArr.length(); i++){
-                queueStringList += (i + 1) + " : " + jsArr.getJSONObject(i).getString("name") + "\n";
+                if(i <= jsArr.length() -1){
+                    queueStringList += (i+1) + " : " + jsArr.getJSONObject(i).getString("name") + "\n";
+                }
+                else if(i > jsArr.length()-1){
+                    queueStringList += (i++) + " : " + jsArr.getJSONObject(i +1).getString("name") + " <--- You";
+                }
 
             }
-
 
             //queueStringList += jsArr.getJSONObject(jsArr.length() -1).getString("name") + " <--- YOU";
             gui.setQueueArea(queueStringList);

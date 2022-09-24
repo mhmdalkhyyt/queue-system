@@ -72,6 +72,7 @@ public class GUI {
 
     public void setQueueArea(String str) {
         this.queueArea.append(str);
+
     }
     private void btnEnterQueueActionPerformed(ActionEvent evt){
         enterQueue = true;
