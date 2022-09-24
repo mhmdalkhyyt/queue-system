@@ -1,6 +1,9 @@
 import tkinter
+from time import sleep
+
 import zmq
 import os
+import json
 from tkinter import *
 import threading
 
@@ -40,6 +43,8 @@ class GUI(threading.Thread):
         name = self.name_box.get(1.0, tkinter.END)
         name = name[:-1]
         socket.send_json({'enterQueue': True, 'name': name})
+        heart_thread = threading.Thread(target=heartbeat)
+        heart_thread.start()
 
     def run(self):
         self.root = Tk()
@@ -65,17 +70,23 @@ class GUI(threading.Thread):
 context = zmq.Context()
 socket = context.socket(zmq.DEALER)
 
+
+def heartbeat():
+    while (True):
+        sleep(3)
+        socket.send_json('')
+
+
 # ------------------------------------------
 # Select the correct line for online or local communication
 # ------------------------------------------
-socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
-# socket.connect('tcp://127.0.0.1:7000')
+# socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
+socket.connect('tcp://127.0.0.1:7000')
 # ------------------------------------------
 gui = GUI()
 
 while True:
     message = socket.recv_json()
-
     if 'ticket' in message:
         print('got ticket')
         print(message, sep='\n')
@@ -83,11 +94,8 @@ while True:
     elif 'queue' in message:
         print('got queue')
         print(message)
-        x = [e['name'] for e in message['queue']]
+        x = [e["name"] for e in message['queue']]
         gui.update_queue(x)
 
-    else:
-        print('got heartbeat')
-        socket.send_json('')
 
 # # source venv/bin/activate

@@ -1,4 +1,12 @@
+# TODO en till kö för supervisors
+# TODO attendfunktion för supervisors typ pop()
+# TODO fixa formatet på den skickade kön
+# TODO heartbeatlyssnare, kanske en lista ihop med systemtid och ID?
+# TODO gränssnitt för supervisors
+
 import tkinter
+from time import sleep
+
 import zmq
 import os
 import binascii
@@ -25,9 +33,7 @@ class GUI(threading.Thread):
             self.queue_box.delete(1.0, END)
 
             for x in d:
-                sliced_string = x[1]
-                sliced_json = json.loads(sliced_string)
-                self.queue_box.insert(END, str(i) + ': ' + sliced_json['name'] + '\n')
+                self.queue_box.insert(END, str(i) + ': ' + x.getName() + '\n')
                 i = i + 1
 
     def queue_button(self):
@@ -44,6 +50,45 @@ class GUI(threading.Thread):
         self.root.mainloop()
 
 
+class QueuePerson():
+    def __init__(self, tnr, name, inID, type):
+        self.Ticket = tnr
+        self.Name = name
+        self.ID = inID  # flera ID
+        self.QType = type
+
+    def getTicketb(self):
+        tempo = {"name": self.Name, "ticket": self.Ticket}
+        self.sendprepr = json.dumps(str(tempo))
+        return [bytes(self.sendprepr, 'UTF-8')]
+
+    def getTicket(self):
+        tempo = {'name': self.Name, 'ticket': self.Ticket}
+        self.sendprepr = json.dumps(tempo)
+        return [self.sendprepr]
+
+    def getID(self):
+        return self.ID
+
+    def getName(self):
+        return self.Name
+
+
+class QueueList:
+
+    def __init__(self):
+        self.listOfQueue = list()
+
+    def addToQueue(self, student):
+        self.listOfQueue.append(student)
+
+
+def heartbeat():
+    while (True):
+        sleep(5)
+        print('From heartbeat')
+
+
 context = zmq.Context()
 backend_socket = context.socket(zmq.ROUTER)
 # ------------------------------------------
@@ -57,54 +102,61 @@ def send_service(mesg):
     backend_socket.send_multipart(mesg)
 
 
-def string_creator(mesg):
-    concMessage = '1wd'
-    return concMessage
+def send_queue(queuelist):
+    sendlist = list()
+    for x in queuelist:
+        sendlist.append(x.getTicket())
+
+    send_dict = {'queue': sendlist}
+    json_sendlist = json.dumps(send_dict)
+    for queuer in subscribers:
+        send_service([queuer, bytes(json_sendlist, 'UTF-8')])
 
 
 # ------------------------------------------
-gui = GUI()
+queueDict = dict()
 subscribers = list()
 help_queue = list()
+ticketNumber = 1
+gui = GUI()
+heartThread = threading.Thread(target=heartbeat)
+heartThread.start()
 
 while True:
     msg = backend_socket.recv_multipart()
-    msg_parsed = json.loads(msg[1])
-    print(msg_parsed)
-    print('Parsed')
-
-    msg_temp = msg[0]
     ID = msg[0]
-    msg_temp = binascii.hexlify(msg_temp).decode('ascii')
-    msg[0] = msg_temp
+    msg_temp = msg[0]
+    msg[0] = binascii.hexlify(msg_temp).decode('ascii')
+    msg_temp = msg[1]
+    msg_temp = msg_temp.decode('ascii')
+    msg[1] = json.loads(msg_temp)
+    print(msg)
 
-    if 'subscribe' in msg[1].decode('ascii'):
-        if msg[0] in subscribers:
-
+    if "subscribe" in msg[1]:
+        if ID in subscribers:
             print('already in subs')
         else:
-            user = msg[1].decode('ascii')
-            subscribers.append(msg[0])
+            subscribers.append(ID)
             print(msg[0] + ' added to subs')
             print(subscribers)
             print('................')
 
-    elif 'enterQueue' in msg[1].decode('ascii'):
-        if msg[0] in help_queue:
+    elif 'enterQueue' in msg[1]:
+        if msg[1] in help_queue:
             print('already in queue')
         else:
-            user = msg[1].decode('ascii')
-            print(msg[0] + ' added to queue')
-            help_queue.append([msg[0], user])
-            message = msg[1].decode('ascii')
-            print(message)
-            for x in range(len(help_queue)):
-                print('Queue printout:')
-                print(help_queue[x])
-            print('................')
+            user = msg[1]['name']
+            print(user + ' added to queue')
+            help_queue.append(QueuePerson(ticketNumber, user, ID, 'Student'))
+            ticketNumber = ticketNumber + 1
+            send_service(help_queue[0].getTicketb())
             gui.update_queue(help_queue)
-            temp = '{\"queue\": [{\"name\": \"rrrrtttfff\", \"ticket\": 1}], \"supervisors\": [], \"serverId\": \"server5530\"}'
-            send_service([ID, bytes(temp, 'UTF-8')])
+            send_queue(help_queue)
+            # sendprep = json.dumps(str(temp_dict))
+            # send_service([ID, bytes(sendprep, 'UTF-8')])
+            # sendList = {"queue", [{"name": "gibbe", "ticket": 15}]}
+            # sendprep = json.dumps(str(queueDict))
+            # send_service([ID, bytes(sendprep, 'UTF-8')])
 
     # print(type(msg[0]))
     # print(type(msg[1]))
