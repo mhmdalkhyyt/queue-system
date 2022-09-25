@@ -1,8 +1,4 @@
-# TODO en till kö för supervisors
-# TODO attendfunktion för supervisors typ pop()
-# TODO fixa formatet på den skickade kön
-# TODO heartbeatlyssnare, kanske en lista ihop med systemtid och ID?
-# TODO gränssnitt för supervisors
+# TODO fixa så att flera ID kan hanteras
 import time
 import tkinter
 from time import sleep
@@ -51,11 +47,11 @@ class GUI(threading.Thread):
 
 
 class QueuePerson():
-    def __init__(self, tnr, name, inID, type):
+    def __init__(self, tnr, name, inID, type_bool):
         self.Ticket = tnr
         self.Name = name
         self.ID = inID  # flera ID
-        self.QType = type
+        self.Supervisor = type_bool
         self.heartbeat_time = time.time()
 
     def getTicketb(self):
@@ -63,9 +59,12 @@ class QueuePerson():
         self.sendprepr = json.dumps(str(tempo))
         return [bytes(self.sendprepr, 'UTF-8')]
 
+    def getTicketNumber(self):
+        return self.Ticket
+
     def getTicket(self):
         tempo = {'name': self.Name, 'ticket': self.Ticket}
-        self.sendprepr = json.dumps(tempo)
+        # self.sendprepr = json.dumps(tempo)
         return [self.sendprepr]
 
     def getID(self):
@@ -81,20 +80,11 @@ class QueuePerson():
         self.heartbeat_time = time.time()
 
 
-class QueueList:
-
-    def __init__(self):
-        self.listOfQueue = list()
-
-    def addToQueue(self, student):
-        self.listOfQueue.append(student)
-
-
 def heartbeat():
     while True:
         for t in help_queue:
             if t.getHeartbeat() < (time.time() - 10.0):
-                print(t.getName() + 'är utkickad')
+                print(t.getName() + ' är utkickad')
                 help_queue.remove(t)
                 gui.update_queue(help_queue)
 
@@ -118,13 +108,17 @@ def send_service(mesg):
     backend_socket.send_multipart(mesg)
 
 
-def send_queue(queuelist):
+def send_queue():
     sendlist = list()
-    for x in queuelist:
-        sendlist.append(x.getTicket())
+    for x in help_queue:
+        name = x.getName()
+        ticket_number = x.getTicketNumber()
+        sss = {'name': name, 'ticket': ticket_number}
+        sendlist.append(sss)
 
     send_dict = {'queue': sendlist}
     json_sendlist = json.dumps(send_dict)
+    print(json_sendlist)
     for queuer in subscribers:
         send_service([queuer, bytes(json_sendlist, 'UTF-8')])
 
@@ -133,6 +127,7 @@ def send_queue(queuelist):
 queueDict = dict()
 subscribers = list()
 help_queue = list()
+supervisors = list()
 ticketNumber = 1
 gui = GUI()
 heartThread = threading.Thread(target=heartbeat)
@@ -163,33 +158,27 @@ while True:
         else:
             user = msg[1]['name']
             print(user + ' added to queue')
-            help_queue.append(QueuePerson(ticketNumber, user, ID, 'Student'))
+            help_queue.append(QueuePerson(ticketNumber, user, ID, False))
             ticketNumber = ticketNumber + 1
             send_service(help_queue[0].getTicketb())
             gui.update_queue(help_queue)
-            send_queue(help_queue)
-            # sendprep = json.dumps(str(temp_dict))
-            # send_service([ID, bytes(sendprep, 'UTF-8')])
-            # sendList = {"queue", [{"name": "gibbe", "ticket": 15}]}
-            # sendprep = json.dumps(str(queueDict))
-            # send_service([ID, bytes(sendprep, 'UTF-8')])
+            send_queue()
+
     elif "" in msg[1]:
         for a in help_queue:
             if ID == a.getID():
                 print('got heartbeat from ' + msg[0])
                 a.setHeartbeat()
-    # print(type(msg[0]))
-    # print(type(msg[1]))
-    # print(msg[0])
-    # print(msg[1].decode('ascii'))
 
-    #
-    # if
-    #     print('got ticket')
-    #     print(message, sep='\n')
-    #
-    # elif 'subscribe' in message:
-    #     print('got queue')
+    elif "supervisor" in msg[1]:
+        supervisors.append(QueuePerson(ticketNumber, user, ID, True))
+
+    elif "attend" in msg[1]:
+        if ID in supervisors:
+            q = help_queue.pop(0)
+            send_service([ID, q.getTicketb()])
+            gui.update_queue(help_queue)
+
     #
     #     x = [e['name'] for e in message['queue']]
     #     # gui.update_queue(x)
