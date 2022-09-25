@@ -3,6 +3,7 @@ from time import sleep
 import zmq
 import os
 from tkinter import *
+from tkinter import messagebox
 import threading
 
 
@@ -56,6 +57,9 @@ class GUI(threading.Thread):
         socket.send_json({'enterQueue': True, 'name': name})
         heart_thread = threading.Thread(target=heartbeat)
         heart_thread.start()
+
+    def show_attend_msg(self):
+        messagebox.showinfo(title='Supervisor is here', message='It is your turn')
 
     def run(self):
         self.root = Tk()
@@ -115,14 +119,15 @@ while True:
         x = [e["name"] for e in message['queue']]
         gui.update_queue(x)
 
-    elif 'supervisor' in message:
+    elif 'supervisors' in message:
         print('got supervisors')
         print(message)
         x = [e["name"] for e in message['supervisors']]
-        gui.update_queue(x)
+        gui.update_supervisors(x)
 
     elif 'attending' in message:
         print('attended')
+        gui.show_attend_msg()
         print(message)
 
 # # source venv/bin/activate

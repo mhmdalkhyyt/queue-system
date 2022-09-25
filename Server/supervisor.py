@@ -12,13 +12,13 @@ class GUI(threading.Thread):
         threading.Thread.__init__(self)
         self.su_box = None
         self.queue_box = None
-        self.supervise_button = None
-        self.attend_button = None
+        self.s_button = None
+        self.a_button = None
         self.name_box = None
         self.first_label = None
         self.second_label = None
         self.root = None
-        self.buttonframe = None
+        self.button_frame = None
         self.start()
 
     def callback(self):
@@ -52,16 +52,15 @@ class GUI(threading.Thread):
                     self.su_box.insert(END, str(i) + ': ' + x + '\n')
                 i = i + 1
 
-    def supervise_button(self):
-        print('supervise button')
+    def supervise_button_m(self):
         name = self.name_box.get(1.0, tkinter.END)
         name = name[:-1]
         socket.send_json({'supervisor': True, 'name': name})
         heart_thread = threading.Thread(target=heartbeat)
         heart_thread.start()
 
+
     def attend_button(self):
-        print('send attend')
         socket.send_json({"attend": True})
 
     def run(self):
@@ -75,17 +74,17 @@ class GUI(threading.Thread):
         self.name_box = tkinter.Text(self.root, height=1, width=15)
         self.name_box.pack(padx=20)
 
-        self.buttonframe = tkinter.Frame(self.root)
-        self.buttonframe.columnconfigure(0)
+        self.button_frame = tkinter.Frame(self.root)
+        self.button_frame.columnconfigure(0)
 
-        self.supervise_button = tkinter.Button(self.buttonframe, text='Supervise', font=('Arial', 18),
-                                               command=self.supervise_button)
-        self.supervise_button.grid(row=0, column=0)
+        self.s_button = tkinter.Button(self.button_frame, text='Supervise', font=('Arial', 16), command=self.supervise_button_m)
 
-        self.attend_button = tkinter.Button(self.buttonframe, text='Attend', font=('Arial', 18), command=self.attend_button)
-        self.attend_button.grid(row=0, column=1)
+        self.s_button.grid(row=0, column=0)
 
-        self.buttonframe.pack(pady=10)
+        self.a_button = tkinter.Button(self.button_frame, text='Attend', font=('Arial', 16), command=self.attend_button)
+        self.a_button.grid(row=0, column=1)
+
+        self.button_frame.pack(pady=10)
 
         self.queue_box = tkinter.Text(self.root, height=18, font=('Arial', 16))
         self.queue_box.pack(padx=20, pady=10)
@@ -95,20 +94,16 @@ class GUI(threading.Thread):
 
         self.su_box = tkinter.Text(self.root, height=4, font=('Arial', 16))
         self.su_box.pack(padx=20, pady=20)
-        print('everything is packed')
         socket.send_json({'subscribe': True})
-        socket.send_json({'supervisor': True, 'name': 'testnamn'})
-        socket.send_json({"attend": True})
         self.root.mainloop()
-
 
 context = zmq.Context()
 socket = context.socket(zmq.DEALER)
 
-
 def heartbeat():
     while (True):
         sleep(3)
+        print('Sends heartbeat')
         socket.send_json('')
 
 
@@ -127,6 +122,7 @@ while True:
     if 'ticket' in message:
         print('got ticket')
         print(message, sep='\n')
+        socket.send_json({"attend": True})
 
     elif 'queue' in message:
         print('got queue')
@@ -134,9 +130,12 @@ while True:
         x = [e["name"] for e in message['queue']]
         gui.update_queue(x)
 
-    elif 'supervisor' in message:
+
+    elif 'supervisors' in message:
         print('got supervisors')
         print(message)
         x = [e["name"] for e in message['supervisors']]
-        gui.update_queue(x)
+        gui.update_supervisors(x)
+
+
 # # source venv/bin/activate

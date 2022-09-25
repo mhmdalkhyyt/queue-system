@@ -55,9 +55,9 @@ class QueuePerson():
         self.Supervisor = type_bool
         self.heartbeat_time = time.time()
 
-
     def addID(self, addID):
         self.ID.append(addID)
+
     def getTicketb(self):
         tempo = {"name": self.Name, "ticket": self.Ticket}
         self.sendprepr = json.dumps(str(tempo))
@@ -83,21 +83,37 @@ class QueuePerson():
         self.heartbeat_time = time.time()
 
 
-def heartbeat():
+def heartbeatQ():
     while True:
-        for t in help_queue:
-            if t.getHeartbeat() < (time.time() - 10.0):
-                print(t.getName() + ' är utkickad')
-                help_queue.remove(t)
-                gui.update_queue(help_queue)
-                send_queue()
+        if len(help_queue) > 0:
+            for t in help_queue:
+                if t.getHeartbeat() < (time.time() - 10.0):
+                    print(t.getName() + ' är utkickad')
+                    help_queue.remove(t)
+                    gui.update_queue(help_queue)
+                    send_queue()
 
-            elif t.getHeartbeat() < (time.time() - 5.0):
-                for d in t.getID():
-                    send_service([d, b"{}"])
+                elif t.getHeartbeat() < (time.time() - 5.0):
+                    for d in t.getID():
+                        send_service([d, b"{}"])
+                else:
+                    pass
 
-            else:
-                pass
+
+def heartbeatS():
+    while True:
+        if len(supervisors) > 0:
+            for sup in supervisors:
+                if sup.getHeartbeat() < (time.time() - 10.0):
+                    print(sup.getName() + ' är utkickad')
+                    supervisors.remove(sup)
+                    send_supervisors()
+
+                elif sup.getHeartbeat() < (time.time() - 5.0):
+                    for d in sup.getID():
+                        send_service([d, b"{}"])
+                else:
+                    pass
 
 
 def send_service(mesg):
@@ -118,19 +134,21 @@ def send_queue():
     for queuer in subscribers:
         send_service([queuer, bytes(json_sendlist, 'UTF-8')])
 
+
 def send_supervisors():
-    sendlist = list()
+    sendlist_su = list()
     for x in supervisors:
         name = x.getName()
         ticket_number = x.getTicketNumber()
         sss = {'name': name, 'ticket': ticket_number}
-        sendlist.append(sss)
+        sendlist_su.append(sss)
 
-    send_dict = {'supervisors': sendlist}
+    send_dict = {'supervisors': sendlist_su}
     json_sendlist = json.dumps(send_dict)
     print(json_sendlist)
     for queuer in subscribers:
         send_service([queuer, bytes(json_sendlist, 'UTF-8')])
+
 
 context = zmq.Context()
 backend_socket = context.socket(zmq.ROUTER)
@@ -147,7 +165,9 @@ help_queue = list()
 supervisors = list()
 ticketNumber = 1
 gui = GUI()
-heartThread = threading.Thread(target=heartbeat)
+heartThread = threading.Thread(target=heartbeatQ)
+heartThread.start()
+heartThread = threading.Thread(target=heartbeatS)
 heartThread.start()
 
 while True:
@@ -168,71 +188,63 @@ while True:
             send_queue()
 
     elif 'enterQueue' in msg[1]:
-        if msg[1] in help_queue:
-            print('already in queue')
-        else:
-            enterQueue = True
-            for person in help_queue:
-                if msg[1]['name'] in person.getName():
-                    person.addID(ID)
-                    enterQueue = False
-                    gui.update_queue(help_queue)
-                    send_queue()
-
-            if enterQueue:
-                user = msg[1]['name']
-                print(user + ' added to queue')
-                help_queue.append(QueuePerson(ticketNumber, user, ID, False))
-                ticketNumber = ticketNumber + 1
-                send_service(help_queue[0].getTicketb())
+        enterQueue = True
+        for person in help_queue:  #Om namnet redan finns läggs id:t till i listan över id som ligger på personen
+            if msg[1]['name'] in person.getName():
+                person.addID(ID)
+                enterQueue = False
                 gui.update_queue(help_queue)
                 send_queue()
 
-    elif "" in msg[1]:
+        if enterQueue:
+            user = msg[1]['name']
+            print(user + ' added to queue')
+            help_queue.append(QueuePerson(ticketNumber, user, ID, False)) # false för att det inte är en supervisor
+            ticketNumber = ticketNumber + 1
+            send_service(help_queue[0].getTicketb())
+            gui.update_queue(help_queue)
+            send_queue()
+
+    elif "" in msg[1] or "{}" in msg[1]:
         for a in help_queue:
             if ID in a.getID():
                 a.setHeartbeat()
 
-    elif "{}" in msg[1]:
-        for a in help_queue:
+        for a in supervisors:
             if ID in a.getID():
                 a.setHeartbeat()
 
-    elif "supervisor" in msg[1]:
+
+    elif 'supervisor' in msg[1]:
         print('supervisor added')
-        supervisors.append(QueuePerson(ticketNumber, user, ID, True))
-
-        if msg[1] in supervisors:
-            print('already in queue')
-        else:
-            enterQueue = True
-            for person in supervisors:
-                if msg[1]['name'] in person.getName():
-                    person.addID(ID)
-                    enterQueue = False
-                    send_supervisors()
-
-            if enterQueue:
-                user = msg[1]['name']
-                print(user + ' added to supervisors')
-                supervisors.append(QueuePerson(ticketNumber, user, ID, False))
-                ticketNumber = ticketNumber + 1
+        enterQueue = True
+        for person in supervisors:
+            if msg[1]['name'] in person.getName():
+                person.addID(ID)
+                enterQueue = False
                 send_supervisors()
+
+        if enterQueue:
+            user = msg[1]['name']
+            print(user + ' added to supervisors')
+            supervisors.append(QueuePerson(ticketNumber, user, ID, False))
+            ticketNumber = ticketNumber + 1
+            send_supervisors()
 
     elif "attend" in msg[1]:
         print('attending')
         for su in supervisors:
-            if ID in su.getID():
-                if len(help_queue)>0:
-                    print('"attending": true')
-                    q = help_queue.pop(0)
-                    att_message = {'attending': True}
-                    att_messageJSON = json.dumps(att_message)
-                    for ide in q.getID():
-                        send_service([ide, bytes(att_messageJSON, 'UTF-8')])
-                    del q
-                    gui.update_queue(help_queue)
-                    send_queue()
-
+            if ID in su.getID() and len(help_queue) > 0:
+                print('"attending": true')
+                q = help_queue.pop(0)
+                print(q.getName()+ ' is poppad')
+                att_message = {'attending': True}
+                att_messageJSON = json.dumps(att_message)
+                for ide in q.getID():
+                    send_service([ide, bytes(att_messageJSON, 'UTF-8')])
+                del q
+                gui.update_queue(help_queue)
+                send_queue()
+                msg = None
 
 # # source venv/bin/activate
