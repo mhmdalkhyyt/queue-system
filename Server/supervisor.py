@@ -10,13 +10,15 @@ class GUI(threading.Thread):
 
     def __init__(self):
         threading.Thread.__init__(self)
-        self.queue_box = None
         self.su_box = None
-        self.send_button = None
+        self.queue_box = None
+        self.supervise_button = None
+        self.attend_button = None
         self.name_box = None
         self.first_label = None
         self.second_label = None
         self.root = None
+        self.buttonframe = None
         self.start()
 
     def callback(self):
@@ -50,27 +52,40 @@ class GUI(threading.Thread):
                     self.su_box.insert(END, str(i) + ': ' + x + '\n')
                 i = i + 1
 
-    def queue_button(self):
+    def supervise_button(self):
+        print('supervise button')
         name = self.name_box.get(1.0, tkinter.END)
         name = name[:-1]
-        socket.send_json({'enterQueue': True, 'name': name})
+        socket.send_json({'supervisor': True, 'name': name})
         heart_thread = threading.Thread(target=heartbeat)
         heart_thread.start()
+
+    def attend_button(self):
+        print('send attend')
+        socket.send_json({"attend": True})
 
     def run(self):
         self.root = Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.callback)
-        self.root.title("Queue client")
+        self.root.title("Supervisor client")
         self.root.geometry('500x800')
         self.first_label = tkinter.Label(self.root, text='Enter your name:', font=('Arial', 18))
-        self.first_label.pack(padx=20, pady=20)
+        self.first_label.pack(padx=20, pady=5)
 
         self.name_box = tkinter.Text(self.root, height=1, width=15)
         self.name_box.pack(padx=20)
 
-        self.send_button = tkinter.Button(self.root, text='Get in the queue', font=('Arial', 18),
-                                          command=self.queue_button)
-        self.send_button.pack(padx=20, pady=10)
+        self.buttonframe = tkinter.Frame(self.root)
+        self.buttonframe.columnconfigure(0)
+
+        self.supervise_button = tkinter.Button(self.buttonframe, text='Supervise', font=('Arial', 18),
+                                               command=self.supervise_button)
+        self.supervise_button.grid(row=0, column=0)
+
+        self.attend_button = tkinter.Button(self.buttonframe, text='Attend', font=('Arial', 18), command=self.attend_button)
+        self.attend_button.grid(row=0, column=1)
+
+        self.buttonframe.pack(pady=10)
 
         self.queue_box = tkinter.Text(self.root, height=18, font=('Arial', 16))
         self.queue_box.pack(padx=20, pady=10)
@@ -80,7 +95,7 @@ class GUI(threading.Thread):
 
         self.su_box = tkinter.Text(self.root, height=4, font=('Arial', 16))
         self.su_box.pack(padx=20, pady=20)
-
+        print('everything is packed')
         socket.send_json({'subscribe': True})
         self.root.mainloop()
 
@@ -102,6 +117,8 @@ def heartbeat():
 socket.connect('tcp://127.0.0.1:7000')
 # ------------------------------------------
 gui = GUI()
+print('gui complete')
+
 
 while True:
     message = socket.recv_json()
@@ -120,5 +137,4 @@ while True:
         print(message)
         x = [e["name"] for e in message['supervisors']]
         gui.update_queue(x)
-
 # # source venv/bin/activate
