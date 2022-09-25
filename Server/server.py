@@ -193,6 +193,11 @@ while True:
             if ID in a.getID():
                 a.setHeartbeat()
 
+    elif "{}" in msg[1]:
+        for a in help_queue:
+            if ID in a.getID():
+                a.setHeartbeat()
+
     elif "supervisor" in msg[1]:
         print('supervisor added')
         supervisors.append(QueuePerson(ticketNumber, user, ID, True))
