@@ -103,7 +103,6 @@ socket = context.socket(zmq.DEALER)
 def heartbeat():
     while (True):
         sleep(3)
-        print('Sends heartbeat')
         socket.send_json('')
 
 
