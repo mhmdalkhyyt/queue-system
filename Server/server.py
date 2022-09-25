@@ -3,7 +3,7 @@
 # TODO fixa formatet på den skickade kön
 # TODO heartbeatlyssnare, kanske en lista ihop med systemtid och ID?
 # TODO gränssnitt för supervisors
-
+import time
 import tkinter
 from time import sleep
 
@@ -56,6 +56,7 @@ class QueuePerson():
         self.Name = name
         self.ID = inID  # flera ID
         self.QType = type
+        self.heartbeat_time = time.time()
 
     def getTicketb(self):
         tempo = {"name": self.Name, "ticket": self.Ticket}
@@ -73,6 +74,12 @@ class QueuePerson():
     def getName(self):
         return self.Name
 
+    def getHeartbeat(self):
+        return self.heartbeat_time
+
+    def setHeartbeat(self):
+        self.heartbeat_time = time.time()
+
 
 class QueueList:
 
@@ -84,9 +91,18 @@ class QueueList:
 
 
 def heartbeat():
-    while (True):
-        sleep(5)
-        print('From heartbeat')
+    while True:
+        for t in help_queue:
+            if t.getHeartbeat() < (time.time() - 10.0):
+                print(t.getName() + 'är utkickad')
+                help_queue.remove(t)
+                gui.update_queue(help_queue)
+
+            elif t.getHeartbeat() < (time.time() - 5.0):
+                send_service([t.getID(), b""])
+
+            else:
+                pass
 
 
 context = zmq.Context()
@@ -157,7 +173,11 @@ while True:
             # sendList = {"queue", [{"name": "gibbe", "ticket": 15}]}
             # sendprep = json.dumps(str(queueDict))
             # send_service([ID, bytes(sendprep, 'UTF-8')])
-
+    elif "" in msg[1]:
+        for a in help_queue:
+            if ID == a.getID():
+                print('got heartbeat from ' + msg[0])
+                a.setHeartbeat()
     # print(type(msg[0]))
     # print(type(msg[1]))
     # print(msg[0])
