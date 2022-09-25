@@ -16,8 +16,13 @@ class GUI(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.queue_box = None
-        self.send_button = None
+        self.time_box = None
+        self.label = None
+        self.button = None
         self.root = None
+        self.button_frame = None
+        self.s_button = None
+
         self.start()
 
     def callback(self):
@@ -35,11 +40,29 @@ class GUI(threading.Thread):
     def queue_button(self):
         pass
 
+    def updateKickoutTime(self):
+        heartb.setKickoutTime(float(self.time_box.get(1.0, tkinter.END)))
+
     def run(self):
         self.root = Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.callback)
         self.root.title("Queue server")
         self.root.geometry('500x600')
+
+        self.button_frame = tkinter.Frame(self.root)
+
+        self.label = Label(self.button_frame, text='Select kickout time:', font=('Arial', 10))
+        self.label.grid(row=0, column=0)
+
+        self.time_box = tkinter.Text(self.button_frame, height=1, width=4)
+        self.time_box.insert(1.0, '15')
+        self.time_box.grid(row=0, column=1)
+
+        self.s_button = tkinter.Button(self.button_frame, text='Change', font=('Arial', 10),
+                                       command=self.updateKickoutTime)
+        self.s_button.grid(row=0, column=2)
+
+        self.button_frame.pack()
         self.queue_box = tkinter.Text(self.root, font=('Arial', 16))
         self.queue_box.pack(padx=20)
 
@@ -83,37 +106,56 @@ class QueuePerson():
         self.heartbeat_time = time.time()
 
 
-def heartbeatQ():
-    while True:
-        if len(help_queue) > 0:
-            for t in help_queue:
-                if t.getHeartbeat() < (time.time() - 10.0):
-                    print(t.getName() + ' är utkickad')
-                    help_queue.remove(t)
-                    gui.update_queue(help_queue)
-                    send_queue()
+class HeartBeat():
 
-                elif t.getHeartbeat() < (time.time() - 5.0):
-                    for d in t.getID():
-                        send_service([d, b"{}"])
-                else:
-                    pass
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.kickouttime = 15.0
 
+    def heartbeatQ(self):
+        while True:
+            if len(help_queue) > 0:
+                for t in help_queue:
+                    if t.getHeartbeat() < (time.time() - self.kickouttime):
+                        print(t.getName() + ' är utkickad')
+                        print(self.kickouttime)
+                        help_queue.remove(t)
+                        gui.update_queue(help_queue)
+                        send_queue()
 
-def heartbeatS():
-    while True:
-        if len(supervisors) > 0:
-            for sup in supervisors:
-                if sup.getHeartbeat() < (time.time() - 10.0):
-                    print(sup.getName() + ' är utkickad')
-                    supervisors.remove(sup)
-                    send_supervisors()
+                    elif t.getHeartbeat() < (time.time() - 5.0):
+                        for d in t.getID():
+                            send_service([d, b"{}"])
+                    else:
+                        pass
 
-                elif sup.getHeartbeat() < (time.time() - 5.0):
-                    for d in sup.getID():
-                        send_service([d, b"{}"])
-                else:
-                    pass
+            sleep(1)
+
+    def heartbeatS(self):
+        while True:
+            if len(supervisors) > 0:
+                for sup in supervisors:
+                    if sup.getHeartbeat() < (time.time() - float(self.kickouttime)):
+                        print(sup.getName() + ' är utkickad')
+                        supervisors.remove(sup)
+                        send_supervisors()
+
+                    elif sup.getHeartbeat() < (time.time() - 5.0):
+                        for d in sup.getID():
+                            send_service([d, b"{}"])
+                    else:
+                        pass
+            sleep(1)
+
+    def startHeartBeats(self):
+        heartThreadQ = threading.Thread(target=self.heartbeatQ)
+        heartThreadQ.start()
+        heartThreadS = threading.Thread(target=self.heartbeatS)
+        heartThreadS.start()
+
+    def setKickoutTime(self, k_time):
+        print('Set time'+ str(k_time))
+        self.kickouttime = k_time
 
 
 def send_service(mesg):
@@ -163,12 +205,13 @@ queueDict = dict()
 subscribers = list()
 help_queue = list()
 supervisors = list()
+#setKickoutTime(15.0)
+
 ticketNumber = 1
 gui = GUI()
-heartThread = threading.Thread(target=heartbeatQ)
-heartThread.start()
-heartThread = threading.Thread(target=heartbeatS)
-heartThread.start()
+heartb = HeartBeat()
+heartb.startHeartBeats()
+
 
 while True:
     msg = backend_socket.recv_multipart()
@@ -186,10 +229,11 @@ while True:
             subscribers.append(ID)
             print(msg[0] + ' added to subs')
             send_queue()
+            send_supervisors()
 
     elif 'enterQueue' in msg[1]:
         enterQueue = True
-        for person in help_queue:  #Om namnet redan finns läggs id:t till i listan över id som ligger på personen
+        for person in help_queue:  # Om namnet redan finns läggs id:t till i listan över id som ligger på personen
             if msg[1]['name'] in person.getName():
                 person.addID(ID)
                 enterQueue = False
@@ -199,7 +243,7 @@ while True:
         if enterQueue:
             user = msg[1]['name']
             print(user + ' added to queue')
-            help_queue.append(QueuePerson(ticketNumber, user, ID, False)) # false för att det inte är en supervisor
+            help_queue.append(QueuePerson(ticketNumber, user, ID, False))  # false för att det inte är en supervisor
             ticketNumber = ticketNumber + 1
             send_service(help_queue[0].getTicketb())
             gui.update_queue(help_queue)
@@ -237,7 +281,7 @@ while True:
             if ID in su.getID() and len(help_queue) > 0:
                 print('"attending": true')
                 q = help_queue.pop(0)
-                print(q.getName()+ ' is poppad')
+                print(q.getName() + ' is poppad')
                 att_message = {'attending': True}
                 att_messageJSON = json.dumps(att_message)
                 for ide in q.getID():

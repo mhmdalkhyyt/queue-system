@@ -73,14 +73,9 @@ class GUI(threading.Thread):
 
         self.name_box = tkinter.Text(self.root, height=1, width=15)
         self.name_box.pack(padx=20)
-
         self.button_frame = tkinter.Frame(self.root)
-        self.button_frame.columnconfigure(0)
-
         self.s_button = tkinter.Button(self.button_frame, text='Supervise', font=('Arial', 16), command=self.supervise_button_m)
-
         self.s_button.grid(row=0, column=0)
-
         self.a_button = tkinter.Button(self.button_frame, text='Attend', font=('Arial', 16), command=self.attend_button)
         self.a_button.grid(row=0, column=1)
 

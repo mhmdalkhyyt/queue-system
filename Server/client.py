@@ -99,6 +99,7 @@ def heartbeat():
         socket.send_json('')
 
 
+
 # ------------------------------------------
 # Select the correct line for online or local communication
 # ------------------------------------------
