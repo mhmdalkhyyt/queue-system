@@ -94,7 +94,7 @@ def heartbeat():
 
             elif t.getHeartbeat() < (time.time() - 5.0):
                 for d in t.getID():
-                    send_service([d, b""])
+                    send_service([d, b"{}"])
 
             else:
                 pass
