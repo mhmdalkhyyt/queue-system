@@ -14,11 +14,10 @@ import org.zeromq.ZMQ;
 import org.zeromq.*;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ.Socket;
+import org.json.*;
 
-
-//import com.fasterxml.jackson.core;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import javax.swing.text.html.HTMLDocument;
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,64 +26,24 @@ import java.util.concurrent.TimeUnit;
 
 public class DSAssign1
 {
-    public static void main(String[] args) throws Exception
-    {
-       initGUI();
+    public static void main(String[] args) throws Exception {
         GUI gui = new GUI();
+        ClientLogic cLogic;
 
-        //Person student = new Person("0", gui.getTextfield().getText());
-        System.out.println("Name for queue: " + gui.getStudentName().getName());
-
-        Thread.sleep(10000);
+        gui.init();
 
             if(args.length > 0){
-                try (ZContext context = new ZContext()) {
-                    Socket socket = context.createSocket(SocketType.DEALER);
-                    socket.connect(args[0]);
 
-                    String payload = "{\"enterQueue\": true,\n" + " \"name\": \"" + gui.getTextfield().getText() + "\"}";
-
-                    socket.send(payload);
-
-                    byte[] response = socket.recv();
-                    System.out.println("Reply from server: " + new String(response, ZMQ.CHARSET));
-
-
-                    while(true){
-                        socket.send("{}");
-                        Thread.sleep(4000);
-                        System.out.println("4 secs passed, sending heartbeat");
-
-                    }
-
-                }
-
+                cLogic = new ClientLogic(args, gui);
+                cLogic.run();
             }
             else{
                 System.out.println("Please specify URL");
 
             }
-        }
-
-
-    public static void sendHeartbeat(Socket socket){
-        System.out.println("Trying to send heartbeat");
-        Runnable heartbeat = () -> {
-
-                String h = "{}";
-                socket.send(h);
-
-                System.out.println("helloo heartbeat");
-
-
-        };
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
-        executorService.scheduleAtFixedRate(heartbeat, 0, 3, TimeUnit.SECONDS);
-        }
-    public static void initGUI(){
-
 
 
     }
+
 };
 
