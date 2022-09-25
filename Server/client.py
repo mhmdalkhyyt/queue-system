@@ -121,4 +121,8 @@ while True:
         x = [e["name"] for e in message['supervisors']]
         gui.update_queue(x)
 
+    elif 'attending' in message:
+        print('attended')
+        print(message)
+
 # # source venv/bin/activate

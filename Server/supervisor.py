@@ -97,6 +97,8 @@ class GUI(threading.Thread):
         self.su_box.pack(padx=20, pady=20)
         print('everything is packed')
         socket.send_json({'subscribe': True})
+        socket.send_json({'supervisor': True, 'name': 'testnamn'})
+        socket.send_json({"attend": True})
         self.root.mainloop()
 
 

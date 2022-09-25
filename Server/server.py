@@ -1,4 +1,4 @@
-# TODO fixa så att flera ID kan hanteras
+# TODO supervisormeddelande
 import time
 import tkinter
 from time import sleep
@@ -217,19 +217,22 @@ while True:
                 print(user + ' added to supervisors')
                 supervisors.append(QueuePerson(ticketNumber, user, ID, False))
                 ticketNumber = ticketNumber + 1
-                #send_service(help_queue[0].getTicketb())
                 send_supervisors()
 
     elif "attend" in msg[1]:
         print('attending')
         for su in supervisors:
             if ID in su.getID():
-                print('supervisor true')
-                q = help_queue.pop(0)
-                send_service(q.getTicketb())
-                del q
-                gui.update_queue(help_queue)
-                send_queue()
+                if len(help_queue)>0:
+                    print('"attending": true')
+                    q = help_queue.pop(0)
+                    att_message = {'attending': True}
+                    att_messageJSON = json.dumps(att_message)
+                    for ide in q.getID():
+                        send_service([ide, bytes(att_messageJSON, 'UTF-8')])
+                    del q
+                    gui.update_queue(help_queue)
+                    send_queue()
 
 
 # # source venv/bin/activate
