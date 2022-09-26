@@ -255,14 +255,6 @@ while True:
             gui.update_queue(help_queue)
             send_queue()
 
-    elif "" in msg[1] or "{}" or "{""}" in msg[1]:
-        for a in help_queue:
-            if ID in a.getID():
-                a.setHeartbeat()
-
-        for a in supervisors:
-            if ID in a.getID():
-                a.setHeartbeat()
 
 
     elif "supervisor" in msg[1]:
@@ -296,5 +288,14 @@ while True:
                 gui.update_queue(help_queue)
                 send_queue()
                 msg = None
+
+    elif "" in msg[1] or "{}" or "{""}" in msg[1]:
+        for a in help_queue:
+            if ID in a.getID():
+                a.setHeartbeat()
+
+        for a in supervisors:
+            if ID in a.getID():
+                a.setHeartbeat()
 
 # # source venv/bin/activate
