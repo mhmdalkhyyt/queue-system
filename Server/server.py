@@ -221,9 +221,10 @@ while True:
     msg_temp = msg[1]
     try:
         msg_temp = msg_temp.decode('ascii')
+        msg[1] = json.loads(msg_temp)
     except:
-        print('convertion is not needed')
-    msg[1] = json.loads(msg_temp)
+        print('convertion is not possible')
+
 
     if "subscribe" in msg[1]:
         if ID in subscribers:
