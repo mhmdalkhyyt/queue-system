@@ -1,4 +1,5 @@
 # TODO supervisormeddelande
+import sys
 import time
 import tkinter
 from time import sleep
@@ -118,14 +119,12 @@ class HeartBeat():
             if len(help_queue) > 0:
                 for t in help_queue:
                     if t.getHeartbeat() < (time.time() - self.kickouttime):
-                        print(t.getName() + ' är utkickad')
                         print(self.kickouttime)
                         help_queue.remove(t)
                         gui.update_queue(help_queue)
                         send_queue()
 
                     elif t.getHeartbeat() < (time.time() - 5.0):
-                        print(t.getName() + " är för långsam")
                         for d in t.getID():
                             send_service([d, b"{}"])
                     else:
@@ -200,7 +199,10 @@ backend_socket = context.socket(zmq.ROUTER)
 # Select the correct line for online or local communication
 # ------------------------------------------
 # socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
-backend_socket.bind('tcp://127.0.0.1:7000')
+
+arg = sys.argv
+print(arg[1])
+backend_socket.bind('tcp://127.0.0.1:' + arg[1])
 
 # ------------------------------------------
 queueDict = dict()
@@ -277,7 +279,7 @@ while True:
         print('attending')
         for su in supervisors:
             if ID in su.getID() and len(help_queue) > 0:
-                print(msg[1]['message'])
+                print('message is: ' + msg[1]['message'])
                 q = help_queue.pop(0)
                 print(q.getName() + ' is poppad')
                 att_message = {"attending": True, "message":msg[1]['message']}
