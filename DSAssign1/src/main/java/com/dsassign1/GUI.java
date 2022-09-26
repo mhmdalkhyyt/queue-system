@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.concurrent.Flow;
 
 /**
  *
@@ -25,6 +26,10 @@ public class GUI {
     private JLabel clientName = new JLabel();
     private JLabel nameLable = new JLabel();
     private JTextField nameTextField = new JTextField();
+    private JTextArea txtArea = new JTextArea();
+
+    private JTextArea supervisorTxtArea = new JTextArea();
+
     private JButton btnEnterQueue = new JButton();
 
     private JList<String> queueList;
@@ -47,8 +52,8 @@ public class GUI {
     }
 
     public void init(){
-        TopLevelFrame.setSize(400,100);
-        TopLevelFrame.setLayout(new GridLayout(2,1));
+        TopLevelFrame.setSize(400,800);
+        TopLevelFrame.setLayout(new GridLayout(3,2));
         TopLevelFrame.setVisible(true);
 
 
@@ -56,6 +61,8 @@ public class GUI {
         TopLevelFrame.add(createQueueArea(studentArr));
 
         TopLevelFrame.add(createSupervisorArea(supervisors));
+
+
         TopLevelFrame.pack();
 
         TopLevelFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -69,14 +76,19 @@ public class GUI {
 
 
     public void setQueueArea(ArrayList<String> str) {
+
+        txtArea.setText("");
+
         for(int i =0; i < str.size(); i++){
-            studentDlm.addElement(str.get(i));
+
+            txtArea.append(str.get(i) + " \n");
         }
     }
 
     public void createSupervisorList(ArrayList<String> str){
+        supervisorTxtArea.setText("");
         for(int i =0; i < str.size(); i++){
-            supervisorDlm.addElement(str.get(i));
+            supervisorTxtArea.append(str.get(i) + " \n");
         }
     }
 
@@ -96,8 +108,6 @@ public class GUI {
         panel.setBorder(new TitledBorder("Student"));
         panel.setLayout(new FlowLayout());
 
-        //clientName.setText("Student");
-        //panel.add(clientName, BorderLayout.NORTH);
         nameLable.setText("Name: ");
 
         panel.add(nameLable);
@@ -119,33 +129,22 @@ public class GUI {
 
     public JPanel createQueueArea(ArrayList<String> strArr){
         JPanel panel = new JPanel();
-        //panel.setBorder(new TitledBorder("Queue"));
+        panel.setBorder(new TitledBorder("Queue Area"));
         panel.setLayout(new FlowLayout());
 
-        //JScrollPane listScroller = new JScrollPane(queueList);
-       // listScroller.setPreferredSize(new Dimension(250,90));
         panel.setToolTipText("Students Queue Area");
 
-        queueList = new JList<>(getDlm());
-
-        queueList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        queueList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        queueList.setVisibleRowCount(-1);
-
-        //panel.add(listScroller);
-        panel.add(queueList);
+        panel.add(txtArea);
         return panel;
     }
 
     public JPanel createSupervisorArea(ArrayList<String> strArr){
         JPanel panel = new JPanel();
+        panel.setBorder(new TitledBorder("Supervisors"));
         panel.setLayout(new FlowLayout());
 
-        supervisorList = new JList<>();
-        supervisorList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        supervisorList.setVisibleRowCount(-1);
 
-        panel.add(supervisorList);
+        panel.add(supervisorTxtArea);
 
         return panel;
     }
@@ -155,21 +154,16 @@ public class GUI {
         return studentDlm;
     }
 
-    public JPanel attendNotifier(boolean beingNotified){
-        JPanel panel = new JPanel();
+    public void attendNotifier(boolean beingNotified, String msg){
+        //JFrame notifierFrame = new JFrame();
+        //JPanel panel = new JPanel();
+
 
         if(beingNotified){
-
-            panel.setLayout(new FlowLayout());
-            JLabel label = new JLabel();
-            label.setText("Its your turn to be attended!");
-
-
-            panel.add(label);
-
+            JOptionPane.showMessageDialog(null, msg);
 
         }
-        return panel;
+
 
     }
 

@@ -26,101 +26,107 @@ public class ClientLogic {
         this.gui = gui;
 //        this.prompt = prompt;
 
+
     }
 
     public void run() throws InterruptedException{
 
         //For some reason ZMQ doesn't wait unless busy wait with thread.sleep
 
+        ZContext context = new ZContext();
+        ZMQ.Socket socket = context.createSocket(SocketType.DEALER);
+        for(int i= 0; i < args.length; i++){
+            socket.connect(args[0]);
+        }
+
+
+
+        receiveMeth(socket);
+
+        String subscribe = "{\"subscribe\": true}";
+        System.out.println(subscribe);
+        socket.send(subscribe);
+
+
+
         while(!gui.isEnterQueue()){
             //wait for request to stand in queue
             Thread.sleep(1);
         }
 
-        ZContext context = new ZContext();
-        ZMQ.Socket socket = context.createSocket(SocketType.DEALER);
-        socket.connect(args[0]);
 
-        String subMsg = "{\"subscribe\": true\"}";
-        socket.send(subMsg);
-
-        byte[] subResp = socket.recv();
-        handleJSON(new String(subResp, ZMQ.CHARSET));
+        if (gui.isEnterQueue()) {
 
 
+            String payload = "{\"enterQueue\": \"true\"," + " \"name\": \"" + gui.getNameTextField().getText() + "\"}";
+            System.out.println(payload);
 
-        while (gui.isEnterQueue()){
-
-
-                heartbeat(socket);
-
-
-                String payload = "{\"enterQueue\": true,\n" + " \"name\": \"" + gui.getNameTextField().getText() + "\"}";
-
-                socket.send(payload);
-
-                byte[] response = socket.recv();
-                //System.out.println("Reply from server: " + new String(response, ZMQ.CHARSET));
-
-                handleJSON(new String(response, ZMQ.CHARSET));
-
-                /*while(true){
-                    socket.send("{}");
-                    Thread.sleep(4000);
-                    System.out.println("4 secs passed, sending heartbeat");
-                    gui.getStudentList(students);
-
-                }*/
-
-            }
-    }
-    public void handleJSON(String str){
-        JSONObject jsonObject = new JSONObject(str);
-        JSONArray studentjsArr;
-        JSONArray supervisorjsArr;
-
-
-        if(jsonObject.has("queue")) {
-            studentjsArr = jsonObject.getJSONArray("queue");
-
-            //System.out.println("Queue List is :" + jsArr);
-            for(int i =0; i < studentjsArr.length(); i++){
-                if(i <= studentjsArr.length() -1){
-                    queueStringList += (i+1) + " : " + studentjsArr.getJSONObject(i).getString("name") + "\n";
-                    students.add(studentjsArr.getJSONObject(i).getString("name"));
-
-                }
-                else if(i > studentjsArr.length()-1){
-                    queueStringList += (i++) + " : " + studentjsArr.getJSONObject(i +1).getString("name") + " <--- You";
-                }
-
-            }
-
-
-            //queueStringList += jsArr.getJSONObject(jsArr.length() -1).getString("name") + " <--- YOU";
-            gui.setQueueArea(students);
+            socket.send(payload);
         }
-        if(jsonObject.has("supervisors")){
-            supervisorjsArr = jsonObject.getJSONArray("supervisors");
-            for(int i= 0; i< supervisorjsArr.length(); i++){
-                supervisors.add(supervisorjsArr.getJSONObject(i).getString("name"));
-            }
-            gui.createSupervisorList(supervisors);
-        }
-
-
     }
 
     public ArrayList<String> getStudents(){
         return students;
     }
 
-    public void heartbeat(ZMQ.Socket socket) throws InterruptedException {
+    public void receiveMeth(ZMQ.Socket socket){
 
-        Thread.sleep(4000);
-        socket.send("{}");
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                while(true){
+
+                    byte[] str = socket.recv();
+                    System.out.println("Received server response");
+                    JSONObject jsonObject = new JSONObject(new String(str, ZMQ.CHARSET));
+                    JSONArray studentjsArr;
+                    JSONArray supervisorjsArr;
+                    System.out.println(jsonObject);
 
 
+                    if(jsonObject.has("queue")) {
+                        studentjsArr = jsonObject.getJSONArray("queue");
+
+                        for(int i =0; i < studentjsArr.length(); i++){
+                            students.add(studentjsArr.getJSONObject(i).getString("name"));
+                            System.out.println(students.get(i).toString());
+                        }
+
+
+                        //queueStringList += jsArr.getJSONObject(jsArr.length() -1).getString("name") + " <--- YOU";
+                        gui.setQueueArea(students);
+                        students.clear();
+                    }
+                    else if (jsonObject.has("supervisors")){
+                        supervisorjsArr = jsonObject.getJSONArray("supervisors");
+
+                        for(int i= 0; i< supervisorjsArr.length(); i++){
+                            supervisors.add(supervisorjsArr.getJSONObject(i).getString("name"));
+                            System.out.println("Supervisors online : " + supervisors.get(i).toString());
+                        }
+                        gui.createSupervisorList(supervisors);
+                        supervisors.clear();
+                    }
+                    else if (jsonObject.has("attending")){
+                        String msg = jsonObject.getString("message");
+
+                        System.out.println(msg);
+
+                        gui.attendNotifier(true, msg);
+                    }
+
+                    else {
+                        System.out.println("Sending heatbeat");
+                        socket.send("{}");
+                    }
+
+                }
+
+            }
+
+        });
+        thread1.start();
     }
 
 
