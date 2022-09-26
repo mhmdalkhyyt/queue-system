@@ -125,7 +125,7 @@ class HeartBeat():
                         send_queue()
 
                     elif t.getHeartbeat() < (time.time() - 5.0):
-                        print(t.getName())
+                        print(t.getName() + " är för långsam")
                         for d in t.getID():
                             send_service([d, b"{}"])
                     else:
