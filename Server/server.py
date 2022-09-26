@@ -219,7 +219,10 @@ while True:
     msg_temp = msg[0]
     msg[0] = binascii.hexlify(msg_temp).decode('ascii')
     msg_temp = msg[1]
-    msg_temp = msg_temp.decode('ascii')
+    try:
+        msg_temp = msg_temp.decode('ascii')
+    except:
+        print('convertion is not needed')
     msg[1] = json.loads(msg_temp)
 
     if "subscribe" in msg[1]:
