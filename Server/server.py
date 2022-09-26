@@ -234,17 +234,17 @@ while True:
             send_queue()
             send_supervisors()
 
-    elif 'enterQueue' in msg[1]:
+    elif "enterQueue" in msg[1]:
         enterQueue = True
         for person in help_queue:  # Om namnet redan finns läggs id:t till i listan över id som ligger på personen
-            if msg[1]['name'] in person.getName():
+            if msg[1]["name"] in person.getName():
                 person.addID(ID)
                 enterQueue = False
                 gui.update_queue(help_queue)
                 send_queue()
 
         if enterQueue:
-            user = msg[1]['name']
+            user = msg[1]["name"]
             print(user + ' added to queue')
             help_queue.append(QueuePerson(ticketNumber, user, ID, False))  # false för att det inte är en supervisor
             ticketNumber = ticketNumber + 1
@@ -262,17 +262,17 @@ while True:
                 a.setHeartbeat()
 
 
-    elif 'supervisor' in msg[1]:
+    elif "supervisor" in msg[1]:
         print('supervisor added')
         enterQueue = True
         for person in supervisors:
-            if msg[1]['name'] in person.getName():
+            if msg[1]["name"] in person.getName():
                 person.addID(ID)
                 enterQueue = False
                 send_supervisors()
 
         if enterQueue:
-            user = msg[1]['name']
+            user = msg[1]["name"]
             print(user + ' added to supervisors')
             supervisors.append(QueuePerson(ticketNumber, user, ID, False))
             ticketNumber = ticketNumber + 1
@@ -285,7 +285,7 @@ while True:
                 print('"attending": true')
                 q = help_queue.pop(0)
                 print(q.getName() + ' is poppad')
-                att_message = {'attending': True}
+                att_message = {"attending": True}
                 att_messageJSON = json.dumps(att_message)
                 for ide in q.getID():
                     send_service([ide, bytes(att_messageJSON, 'UTF-8')])
