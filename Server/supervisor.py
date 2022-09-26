@@ -15,6 +15,7 @@ class GUI(threading.Thread):
         self.s_button = None
         self.a_button = None
         self.name_box = None
+        self.msgbox = None
         self.first_label = None
         self.second_label = None
         self.root = None
@@ -61,7 +62,10 @@ class GUI(threading.Thread):
 
 
     def attend_button(self):
-        socket.send_json({"attend": True})
+
+        msg = self.msgbox.get(1.0, tkinter.END)
+        msg = msg[:-1]
+        socket.send_json({"attend": True, "message": msg})
 
     def run(self):
         self.root = Tk()
@@ -78,6 +82,8 @@ class GUI(threading.Thread):
         self.s_button.grid(row=0, column=0)
         self.a_button = tkinter.Button(self.button_frame, text='Attend', font=('Arial', 16), command=self.attend_button)
         self.a_button.grid(row=0, column=1)
+        self.msgbox = tkinter.Text(self.button_frame, height=1, width=20)
+        self.msgbox.grid(row=0, column=2)
 
         self.button_frame.pack(pady=10)
 

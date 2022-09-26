@@ -220,7 +220,8 @@ while True:
     msg[0] = binascii.hexlify(msg_temp).decode('ascii')
     msg_temp = msg[1]
     try:
-        msg_temp = msg_temp.decode('ascii')
+        msg_temp = msg_temp.decode('UTF-8')
+        print(msg_temp)
         msg[1] = json.loads(msg_temp)
     except:
         print('convertion is not possible')
@@ -283,10 +284,10 @@ while True:
         print('attending')
         for su in supervisors:
             if ID in su.getID() and len(help_queue) > 0:
-                print('"attending": true')
+                print(msg[1]['message'])
                 q = help_queue.pop(0)
                 print(q.getName() + ' is poppad')
-                att_message = {"attending": True}
+                att_message = {"attending": True, "message":msg[1]['message']}
                 att_messageJSON = json.dumps(att_message)
                 for ide in q.getID():
                     send_service([ide, bytes(att_messageJSON, 'UTF-8')])

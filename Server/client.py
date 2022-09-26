@@ -58,8 +58,8 @@ class GUI(threading.Thread):
         heart_thread = threading.Thread(target=heartbeat)
         heart_thread.start()
 
-    def show_attend_msg(self):
-        messagebox.showinfo(title='Supervisor is here', message='It is your turn')
+    def show_attend_msg(self, string):
+        messagebox.showinfo(title='Supervisor is here', message=string)
 
     def run(self):
         self.root = Tk()
@@ -128,7 +128,7 @@ while True:
 
     elif 'attending' in message:
         print('attended')
-        gui.show_attend_msg()
+        gui.show_attend_msg(message['message'])
         print(message)
 
 # # source venv/bin/activate
