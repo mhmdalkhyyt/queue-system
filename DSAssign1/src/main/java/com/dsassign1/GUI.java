@@ -5,9 +5,11 @@
 package com.dsassign1;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 /**
  *
@@ -16,29 +18,92 @@ import java.awt.event.ActionListener;
 public class GUI {
     String view = "Student Client";
 
-    private JFrame frame = new JFrame(view);
+
+    private JFrame TopLevelFrame = new JFrame(view);
+    private JFrame queueAreaFrame = new JFrame();
+
+    private JLabel clientName = new JLabel();
     private JLabel nameLable = new JLabel();
     private JTextField nameTextField = new JTextField();
     private JButton btnEnterQueue = new JButton();
-    private JTextArea queueArea = new JTextArea();
+
+    private JList<String> queueList;
+
+    private JList<String> supervisorList;
+
+    private ArrayList<String> studentArr = new ArrayList<>();
+
+    private DefaultListModel<String> studentDlm = new DefaultListModel<>();
+    private DefaultListModel<String> supervisorDlm = new DefaultListModel<>();
+
+    private ArrayList<String> supervisors = new ArrayList<>();
+    //private JScrollPane queueScroll;
 
 
     private boolean enterQueue = false;
 
+    public GUI(){
+        init();
+    }
+
     public void init(){
-        frame.setSize(400,500);
-        frame.setVisible(true);
-        frame.setLayout(new FlowLayout());
+        TopLevelFrame.setSize(400,100);
+        TopLevelFrame.setLayout(new GridLayout(2,1));
+        TopLevelFrame.setVisible(true);
 
-        //nameLable
+
+        TopLevelFrame.add(createStudentPromptPanel());
+        TopLevelFrame.add(createQueueArea(studentArr));
+
+        TopLevelFrame.add(createSupervisorArea(supervisors));
+        TopLevelFrame.pack();
+
+        TopLevelFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+
+    public JTextField getNameTextField() {
+        return nameTextField;
+    }
+
+
+
+    public void setQueueArea(ArrayList<String> str) {
+        for(int i =0; i < str.size(); i++){
+            studentDlm.addElement(str.get(i));
+        }
+    }
+
+    public void createSupervisorList(ArrayList<String> str){
+        for(int i =0; i < str.size(); i++){
+            supervisorDlm.addElement(str.get(i));
+        }
+    }
+
+
+    private void btnEnterQueueActionPerformed(ActionEvent evt){
+        enterQueue = true;
+    }
+
+
+    public boolean isEnterQueue() {
+        return enterQueue;
+    }
+
+
+    public JPanel createStudentPromptPanel(){
+        JPanel panel = new JPanel();
+        panel.setBorder(new TitledBorder("Student"));
+        panel.setLayout(new FlowLayout());
+
+        //clientName.setText("Student");
+        //panel.add(clientName, BorderLayout.NORTH);
         nameLable.setText("Name: ");
-        frame.add(nameLable);
 
-        //nameTextField
+        panel.add(nameLable);
         nameTextField.setColumns(20);
-        frame.add(nameTextField);
+        panel.add(nameTextField);
 
-        //btnEnterQueue
         btnEnterQueue.setText("Enter Queue");
         btnEnterQueue.addActionListener(new java.awt.event.ActionListener(){
             @Override
@@ -48,43 +113,68 @@ public class GUI {
 
             }
         });
-        frame.add(btnEnterQueue);
+        panel.add(btnEnterQueue);
+        return panel;
+    }
 
+    public JPanel createQueueArea(ArrayList<String> strArr){
+        JPanel panel = new JPanel();
+        //panel.setBorder(new TitledBorder("Queue"));
+        panel.setLayout(new FlowLayout());
 
-        frame.add(queueArea);
+        //JScrollPane listScroller = new JScrollPane(queueList);
+       // listScroller.setPreferredSize(new Dimension(250,90));
+        panel.setToolTipText("Students Queue Area");
 
+        queueList = new JList<>(getDlm());
 
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        queueList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        queueList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        queueList.setVisibleRowCount(-1);
+
+        //panel.add(listScroller);
+        panel.add(queueList);
+        return panel;
+    }
+
+    public JPanel createSupervisorArea(ArrayList<String> strArr){
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout());
+
+        supervisorList = new JList<>();
+        supervisorList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        supervisorList.setVisibleRowCount(-1);
+
+        panel.add(supervisorList);
+
+        return panel;
     }
 
 
-    public JTextField getNameTextField() {
-        return nameTextField;
+    public DefaultListModel<String> getDlm(){
+        return studentDlm;
     }
 
-    public void setNameTextField(String str) {
-        this.nameTextField.setText(str);
-    }
+    public JPanel attendNotifier(boolean beingNotified){
+        JPanel panel = new JPanel();
 
-    public JTextArea getQueueArea() {
-        return queueArea;
-    }
+        if(beingNotified){
 
-    public void setQueueArea(String str) {
-        this.queueArea.append(str);
-
-    }
-    private void btnEnterQueueActionPerformed(ActionEvent evt){
-        enterQueue = true;
-    }
-    public boolean isEnterQueue() {
-        return enterQueue;
-    }
+            panel.setLayout(new FlowLayout());
+            JLabel label = new JLabel();
+            label.setText("Its your turn to be attended!");
 
 
-    public void queueAreaActionPerformed(ActionEvent evt){
-        String text = queueArea.getText();
-        queueArea.append(text);
+            panel.add(label);
+
+
+        }
+        return panel;
+
+    }
+
+    public void getStudentList(ArrayList<String> stringArrayList){
+        studentArr = stringArrayList;
     }
 }
 

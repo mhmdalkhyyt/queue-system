@@ -27,12 +27,16 @@ import java.util.concurrent.TimeUnit;
 public class DSAssign1
 {
     public static void main(String[] args) throws Exception {
-        GUI gui = new GUI();
-        ClientLogic cLogic;
+      GUI gui = new GUI();
 
-        gui.init();
+       ClientLogic cLogic;
 
-            if(args.length > 0){
+      // Prompt prompt = new Prompt();
+
+      // prompt.init();
+
+
+           if(args.length > 0){
 
                 cLogic = new ClientLogic(args, gui);
                 cLogic.run();
