@@ -104,6 +104,7 @@ class QueuePerson():
 
     def setHeartbeat(self):
         self.heartbeat_time = time.time()
+        print(self.getName())
 
 
 class HeartBeat():
@@ -124,6 +125,7 @@ class HeartBeat():
                         send_queue()
 
                     elif t.getHeartbeat() < (time.time() - 5.0):
+                        print(t.getName())
                         for d in t.getID():
                             send_service([d, b"{}"])
                     else:
@@ -221,7 +223,6 @@ while True:
     msg_temp = msg[1]
     try:
         msg_temp = msg_temp.decode('UTF-8')
-        print(msg_temp)
         msg[1] = json.loads(msg_temp)
     except:
         print('convertion is not possible')
