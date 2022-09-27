@@ -1,5 +1,6 @@
 import tkinter
 from time import sleep
+import time
 import zmq
 import sys
 import os
@@ -55,9 +56,11 @@ class GUI(threading.Thread):
     def queue_button(self):
         name = self.name_box.get(1.0, tkinter.END)
         name = name[:-1]
-        socket.send_json({'enterQueue': True, 'name': name})
-        heart_thread = threading.Thread(target=heartbeat)
-        heart_thread.start()
+        client.socket.send_json({'enterQueue': True, 'name': name})
+
+        for x in range(len(arg) - 1):
+            client.socket.send_json({'enterQueue': True, 'name': name})
+        heartb.startHeartBeats()
 
     def show_attend_msg(self, string):
         messagebox.showinfo(title='Supervisor is here', message=string)
@@ -86,32 +89,85 @@ class GUI(threading.Thread):
         self.su_box = tkinter.Text(self.root, height=4, font=('Arial', 16))
         self.su_box.pack(padx=20, pady=20)
 
-        socket.send_json({'subscribe': True})
+        client.socket.send_json({'subscribe': True})
         self.root.mainloop()
 
 
-context = zmq.Context()
-socket = context.socket(zmq.DEALER)
+class FLClient(object):
+    def __init__(self):
+        self.servers = 0
+        self.sequence = 0
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.DEALER)  # DEALER
+        self.monitor_socket = self.socket.get_monitor_socket()
+
+    def connect(self, endpoint):
+        self.socket.connect(endpoint)
+        self.servers += 1
+        serverlist.append([endpoint[16:], time.time(), True])
+        print("I: Connected to %s" % endpoint)
+        self.socket.send_json({'subscribe': True})
 
 
-def heartbeat():
-    while (True):
-        sleep(3)
-        socket.send_json('')
+class HeartBeat():
+
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.heartThreadQ = threading.Thread(target=self.heartbeatQ)
+
+    def heartbeatQ(self):
+
+        while True:
+            aliveservers = len(serverlist)
+            for x in serverlist:
+                if bool(x[2]):  # the server status is True
+                    if x[1] < (time.time() - 30.0):
+                        print('Server ' + x[0] + ' has disconnected')
+                        x[2] = False  # server status sets to False
+                        aliveservers -= 1
+
+                else:
+                    aliveservers -= 1
+                if aliveservers == 0:
+                    gui.show_msg('All servers has disconnected')
+                    heartb.stopHeartBeats()
+            sleep(2)
+
+    def startHeartBeats(self):
+
+        self.heartThreadQ.start()
+
+    def stopHeartBeats(self):
+        self.heartThreadQ.kill()
 
 
+gui = GUI()
+sleep(1)
+print('gui complete')
+heartb = HeartBeat()
+queuelist = list()
+serverlist = list()
+client = FLClient()
 arg = sys.argv
+for endpoint in sys.argv[1:]:
+    client.connect('tcp://127.0.0.1:' + str(endpoint))
 
 # ------------------------------------------
 # Select the correct line for online or local communication
 # ------------------------------------------
 # socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
-socket.connect('tcp://127.0.0.1:' + arg[1])
+# socket.connect('tcp://127.0.0.1:' + arg[1])
 # ------------------------------------------
 gui = GUI()
 
 while True:
-    message = socket.recv_json()
+    message = client.socket.recv_json()
+    server_id = message['serverId']
+    for server in serverlist:  # updates time since last connection and sets server status to True
+        if server[0] == str(server_id):
+            server[1] = time.time()
+            server[2] = True
+    print(serverlist)
     if 'ticket' in message:
         print('got ticket')
         print(message, sep='\n')
