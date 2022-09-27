@@ -36,7 +36,9 @@ public class ClientLogic {
         ZContext context = new ZContext();
         ZMQ.Socket socket = context.createSocket(SocketType.DEALER);
         for(int i= 0; i < args.length; i++){
-            socket.connect(args[0]);
+            socket.connect(args[i]);
+
+            System.out.println("Server connected to : " + args[i]);
         }
 
 
@@ -57,7 +59,7 @@ public class ClientLogic {
 
         if (gui.isEnterQueue()) {
 
-
+            //ZMsg 
             String payload = "{\"enterQueue\": \"true\"," + " \"name\": \"" + gui.getNameTextField().getText() + "\"}";
             System.out.println(payload);
 

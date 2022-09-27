@@ -31,9 +31,6 @@ public class DSAssign1
 
        ClientLogic cLogic;
 
-      // Prompt prompt = new Prompt();
-
-      // prompt.init();
 
 
            if(args.length > 0){
