@@ -179,7 +179,9 @@ while True:
     for server in serverlist:  # updates time since last connection and sets server status to True
         if server[0] == str(server_id):
             server[1] = time.time()
-            server[2] = True
+            if server[1] == False:
+                server[2] = True
+                gui.supervise_button_m()
     print(serverlist)
 
     if 'ticket' in message:
