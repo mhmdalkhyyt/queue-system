@@ -118,6 +118,7 @@ class FLClient(object):
     def connect(self, endpoint):
         self.socket.connect(endpoint)
         self.servers += 1
+        serverlist.append([endpoint, time.time()])
         print("I: Connected to %s" % endpoint)
         self.socket.send_json({'subscribe': True})
 
@@ -163,15 +164,38 @@ class FLClient(object):
         # return reply
 
 
+class HeartBeat():
+
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def heartbeatQ(self):
+        while True:
+            for x in serverlist:
+                if serverlist[x][1] < (time.time() - 10.0):
+                    print('Server ' + serverlist[x][0] + ' has disconnected')
+                    retrylist.append(serverlist[x])
+                    client.connect('tcp://127.0.0.1:' + str(serverlist[x][0]))
+                else:
+                    pass
+
+
+            sleep(1)
+
+
+    def startHeartBeats(self):
+        heartThreadQ = threading.Thread(target=self.heartbeatQ)
+        heartThreadQ.start()
+
+
+
 gui = GUI()
 sleep(1)
 print('gui complete')
 
 queuelist = list()
-
-if len(sys.argv) == 1:
-    print("I: Usage: %s <endpoint> ..." % sys.argv[0])
-    sys.exit(0)
+serverlist = list()
+retrylist = list()
 
 # Create new freelance client object
 client = FLClient()
@@ -205,6 +229,8 @@ def heartbeat():
 
 while True:
     message = client.socket.recv_json()
+    id = message['id']
+
     if 'ticket' in message:
         print('got ticket')
         print(message, sep='\n')
