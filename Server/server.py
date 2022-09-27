@@ -18,7 +18,6 @@ class GUI(threading.Thread):
         self.queue_box = None
         self.time_box = None
         self.label = None
-        self.button = None
         self.root = None
         self.button_frame = None
         self.s_button = None
@@ -32,13 +31,9 @@ class GUI(threading.Thread):
         i = 1
         if self.queue_box is not None:
             self.queue_box.delete(1.0, END)
-
             for x in d:
                 self.queue_box.insert(END, str(i) + ': ' + x.getName() + '\n')
                 i = i + 1
-
-    def queue_button(self):
-        pass
 
     def updateKickoutTime(self):
         heartb.setKickoutTime(float(self.time_box.get(1.0, tkinter.END)))
@@ -48,9 +43,7 @@ class GUI(threading.Thread):
         self.root.protocol("WM_DELETE_WINDOW", self.callback)
         self.root.title("Queue server on port: " + arg[1])
         self.root.geometry('500x600')
-
         self.button_frame = tkinter.Frame(self.root)
-
         self.label = Label(self.button_frame, text='Select kickout time:', font=('Arial', 10))
         self.label.grid(row=0, column=0)
 
@@ -63,7 +56,7 @@ class GUI(threading.Thread):
         self.s_button.grid(row=0, column=2)
 
         self.button_frame.pack()
-        self.queue_box = tkinter.Text(self.root, font=('Arial', 16))
+        self.queue_box = tkinter.Text(self.root, font=('Arial', 14))
         self.queue_box.pack(padx=20)
 
         self.root.mainloop()

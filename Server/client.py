@@ -68,24 +68,24 @@ class GUI(threading.Thread):
         self.root = Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.callback)
         self.root.title("Queue client")
-        self.root.geometry('500x800')
-        self.first_label = tkinter.Label(self.root, text='Enter your name:', font=('Arial', 18))
-        self.first_label.pack(padx=20, pady=20)
+        self.root.geometry('400x550')
+        self.first_label = tkinter.Label(self.root, text='Enter your name:', font=('Arial', 16))
+        self.first_label.pack(padx=20, pady=10)
 
         self.name_box = tkinter.Text(self.root, height=1, width=15)
         self.name_box.pack(padx=20)
 
-        self.send_button = tkinter.Button(self.root, text='Get in the queue', font=('Arial', 18),
+        self.send_button = tkinter.Button(self.root, text='Get in the queue', font=('Arial', 16),
                                           command=self.queue_button)
         self.send_button.pack(padx=20, pady=10)
 
-        self.queue_box = tkinter.Text(self.root, height=18, font=('Arial', 16))
+        self.queue_box = tkinter.Text(self.root, height=13, font=('Arial', 12))
         self.queue_box.pack(padx=20, pady=10)
 
-        self.second_label = tkinter.Label(self.root, text='Supervisors:', font=('Arial', 18))
+        self.second_label = tkinter.Label(self.root, text='Supervisors:', font=('Arial', 16))
         self.second_label.pack(padx=20)
 
-        self.su_box = tkinter.Text(self.root, height=4, font=('Arial', 16))
+        self.su_box = tkinter.Text(self.root, height=4, font=('Arial', 12))
         self.su_box.pack(padx=20, pady=20)
 
 
