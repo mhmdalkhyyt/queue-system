@@ -124,7 +124,7 @@ class HeartBeat():
 
                     elif t.getHeartbeat() < (time.time() - 5.0):
                         for d in t.getID():
-                            sendText = {'id': serverID}
+                            sendText = {'serverId': serverID}
                             sendText = json.dumps(sendText)
                             sendText = bytes(sendText, 'UTF-8')
                             send_service([d, sendText])
@@ -145,7 +145,7 @@ class HeartBeat():
                     elif sup.getHeartbeat() < (time.time() - 5.0):
                         for d in sup.getID():
                             #send_service([d, b"{'id': serverID}"])
-                            sendText = {'id': serverID}
+                            sendText = {'serverId': serverID}
                             sendText = json.dumps(sendText)
                             sendText = bytes(sendText, 'UTF-8')
                             send_service([d, sendText])
@@ -176,7 +176,7 @@ def send_queue():
         sss = {'name': name, 'ticket': ticket_number}
         sendlist.append(sss)
 
-    send_dict = {'id': serverID, 'queue': sendlist}
+    send_dict = {'serverId': serverID, 'queue': sendlist}
     json_sendlist = json.dumps(send_dict)
     print(json_sendlist)
     for queuer in subscribers:
@@ -191,7 +191,7 @@ def send_supervisors():
         sss = {'name': name, 'ticket': ticket_number}
         sendlist_su.append(sss)
 
-    send_dict = {'id': serverID, 'supervisors': sendlist_su}
+    send_dict = {'serverId': serverID, 'supervisors': sendlist_su}
     json_sendlist = json.dumps(send_dict)
     print(json_sendlist)
     for queuer in subscribers:
@@ -288,7 +288,7 @@ while True:
                     print('message is: ' + msg[1]['message'])
                     q = help_queue.pop(0)
                     print(q.getName() + ' is poppad')
-                    att_message = {'id': serverID, "attending": True, "message": msg[1]['message']}
+                    att_message = {'serverId': serverID, "attending": True, "message": msg[1]['message']}
                     att_messageJSON = json.dumps(att_message)
                     for ide in q.getID():
                         send_service([ide, bytes(att_messageJSON, 'UTF-8')])
@@ -297,7 +297,8 @@ while True:
                     send_queue()
                     msg = None
 
-    elif "" in msg[1] or "{}" or "{""}" in msg[1]:
+    elif "" in msg[1] or "{}" in msg[1] or "{""}" in msg[1] or '' in msg[1]:
+        print('Got heartbeat from client')
         for a in help_queue:
             if ID in a.getID():
                 a.setHeartbeat()

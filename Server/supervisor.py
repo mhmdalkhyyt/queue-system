@@ -5,6 +5,7 @@ import zmq
 import zmq.utils.monitor
 import sys
 import os
+from tkinter import messagebox
 from tkinter import *
 import threading
 
@@ -61,10 +62,10 @@ class GUI(threading.Thread):
     def supervise_button_m(self):
         name = self.name_box.get(1.0, tkinter.END)
         name = name[:-1]
-        for x in range (len(arg)-1):
+        for x in range(len(arg) - 1):
             client.socket.send_json({'supervisor': True, 'name': name})
-        heart_thread = threading.Thread(target=heartbeat)
-        heart_thread.start()
+
+        heartb.startHeartBeats()
 
     def attend_button(self):
 
@@ -73,6 +74,9 @@ class GUI(threading.Thread):
         next_student = str(queuelist[0])
         print('next is ' + next_student)
         client.socket.send_json({"attend": True, "name": next_student, "message": msg})
+
+    def show_msg(self, string):
+        messagebox.showinfo(title='Incoming message', message=string)
 
     def run(self):
         self.root = Tk()
@@ -118,84 +122,54 @@ class FLClient(object):
     def connect(self, endpoint):
         self.socket.connect(endpoint)
         self.servers += 1
-        serverlist.append([endpoint, time.time()])
+        serverlist.append([endpoint[16:], time.time(), True])
         print("I: Connected to %s" % endpoint)
         self.socket.send_json({'subscribe': True})
-
-    # def monitor_worker(self):
-    #     monitor_socket = self.socket.get_monitor_socket()
-    #     monitor_socket.linger = 0
-    #     poller = zmq.Poller()
-    #     poller.register(monitor_socket, zmq.POLLIN)
-    #     while self.enabled:
-    #         socks = poller.poll()
-    #         if len(socks) > 0:
-    #             data = recv_monitor_message(monitor_socket)
-    #             event = data['event']
-    #             if event == zmq.EVENT_CONNECTED:
-    #                 # logger.warning('Connected to {0}'.format(self.zmq_socket_url))
-    #                 print('Event: connected')
-    #             elif event == zmq.EVENT_DISCONNECTED:
-    #                 # logger.warning('Connection to {0} was disconencted'.format(self.zmq_socket_url))
-    #                 print('Event: disconnected')
-
-    def sendMsg(self, *request):
-        pass
-        # # Prefix request with sequence number and empty envelope
-        # self.sequence += 1
-        # msg = ['', str(self.sequence)] + list(request)
-        #
-        # # Blast the request to all connected servers
-        # for server in xrange(self.servers):
-        #     # self.socket.send_multipart(msg)
-        #     pass
-        #
-        # # Wait for a matching reply to arrive from anywhere
-        # # Since we can poll several times, calculate each one
-        # poll = zmq.Poller()
-        # poll.register(self.socket, zmq.POLLIN)
-        #
-        # reply = None
-        # while time.time() < endtime:
-        #     socks = dict(poll.poll())
-        #     if socks.get(self.socket) == zmq.POLLIN:
-        #         reply = self.socket.recv_multipart()
-        #
-        # return reply
 
 
 class HeartBeat():
 
     def __init__(self):
         threading.Thread.__init__(self)
+        self.heartThreadQ = threading.Thread(target=self.heartbeatQ)
 
     def heartbeatQ(self):
+
         while True:
+            aliveservers = len(serverlist)
+            sleep(2)
             for x in serverlist:
-                if serverlist[x][1] < (time.time() - 10.0):
-                    print('Server ' + serverlist[x][0] + ' has disconnected')
-                    retrylist.append(serverlist[x])
-                    client.connect('tcp://127.0.0.1:' + str(serverlist[x][0]))
+                if x[2]:
+                    if x[1] < (time.time() - 30.0):
+                        print('Server ' + x[0] + ' has disconnected')
+                        x[2] = False
+                        aliveservers -= 1
+                        print('Alive servers is: ' + str(aliveservers))
                 else:
-                    pass
+                    aliveservers -= 1
 
+                if aliveservers == 0:
+                    gui.show_msg('All servers has disconnected')
+                    heartb.stopHeartBeats()
 
-            sleep(1)
 
 
     def startHeartBeats(self):
-        heartThreadQ = threading.Thread(target=self.heartbeatQ)
-        heartThreadQ.start()
+
+        self.heartThreadQ.start()
+
+    def stopHeartBeats(self):
+        self.heartThreadQ.stop()
+
 
 
 
 gui = GUI()
 sleep(1)
 print('gui complete')
-
+heartb = HeartBeat()
 queuelist = list()
 serverlist = list()
-retrylist = list()
 
 # Create new freelance client object
 client = FLClient()
@@ -204,20 +178,15 @@ arg = sys.argv
 for endpoint in sys.argv[1:]:
     client.connect('tcp://127.0.0.1:' + str(endpoint))
 
-start = time.time()
+
 
 
 def heartbeat():
     while (True):
         sleep(3)
-        for x in range (len(arg)-1):
-            client.socket.send_json('')
+        # for x in range (len(arg)-1):
+        #     client.socket.send_json('')
 
-
-# arg = sys.argv
-# for port in enumerate(arg, start=1):
-#     print(port[1])
-#     socket.connect('tcp://127.0.0.1:' + str(port[1]))
 # ------------------------------------------
 # Select the correct line for online or local communication
 # ------------------------------------------
@@ -226,15 +195,19 @@ def heartbeat():
 # ------------------------------------------
 
 
-
 while True:
     message = client.socket.recv_json()
-    id = message['id']
+    server_id = message['id']
+    for server in serverlist:
+        if server[0] == str(server_id):
+            server[1] = time.time()
+            server[2] = True
+    print(serverlist)
 
     if 'ticket' in message:
         print('got ticket')
         print(message, sep='\n')
-        #socket.send_json({"attend": True})
+        # socket.send_json({"attend": True})
 
     elif 'queue' in message:
         print('got queue')
@@ -252,5 +225,9 @@ while True:
         print(message)
         x = [e["name"] for e in message['supervisors']]
         gui.update_supervisors(x)
+
+    else:
+        for x in range(len(arg) - 1):
+            client.socket.send_json("{}")
 
 # # source venv/bin/activate
