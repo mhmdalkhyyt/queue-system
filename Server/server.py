@@ -1,4 +1,3 @@
-# TODO supervisormeddelande
 import sys
 import time
 import tkinter
@@ -47,7 +46,7 @@ class GUI(threading.Thread):
     def run(self):
         self.root = Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.callback)
-        self.root.title("Queue server")
+        self.root.title("Queue server on port: " + arg[1])
         self.root.geometry('500x600')
 
         self.button_frame = tkinter.Frame(self.root)
@@ -105,7 +104,6 @@ class QueuePerson():
 
     def setHeartbeat(self):
         self.heartbeat_time = time.time()
-        print(self.getName())
 
 
 class HeartBeat():
@@ -126,7 +124,7 @@ class HeartBeat():
 
                     elif t.getHeartbeat() < (time.time() - 5.0):
                         for d in t.getID():
-                            send_service([d, b"{}"])
+                            send_service([d, b"{'id': serverID}"])
                     else:
                         pass
 
@@ -143,7 +141,7 @@ class HeartBeat():
 
                     elif sup.getHeartbeat() < (time.time() - 5.0):
                         for d in sup.getID():
-                            send_service([d, b"{}"])
+                            send_service([d, b"{'id': serverID}"])
                     else:
                         pass
             sleep(1)
@@ -155,7 +153,7 @@ class HeartBeat():
         heartThreadS.start()
 
     def setKickoutTime(self, k_time):
-        print('Set time'+ str(k_time))
+        print('Set time' + str(k_time))
         self.kickouttime = k_time
 
 
@@ -171,7 +169,7 @@ def send_queue():
         sss = {'name': name, 'ticket': ticket_number}
         sendlist.append(sss)
 
-    send_dict = {'queue': sendlist}
+    send_dict = {'id': serverID, 'queue': sendlist}
     json_sendlist = json.dumps(send_dict)
     print(json_sendlist)
     for queuer in subscribers:
@@ -186,7 +184,7 @@ def send_supervisors():
         sss = {'name': name, 'ticket': ticket_number}
         sendlist_su.append(sss)
 
-    send_dict = {'supervisors': sendlist_su}
+    send_dict = {'id': serverID, 'supervisors': sendlist_su}
     json_sendlist = json.dumps(send_dict)
     print(json_sendlist)
     for queuer in subscribers:
@@ -201,6 +199,7 @@ backend_socket = context.socket(zmq.ROUTER)
 # socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
 
 arg = sys.argv
+serverID = arg[1]
 
 backend_socket.bind('tcp://127.0.0.1:' + arg[1])
 
@@ -209,13 +208,12 @@ queueDict = dict()
 subscribers = list()
 help_queue = list()
 supervisors = list()
-#setKickoutTime(15.0)
+# setKickoutTime(15.0)
 
 ticketNumber = 1
 gui = GUI()
 heartb = HeartBeat()
 heartb.startHeartBeats()
-
 
 while True:
     msg = backend_socket.recv_multipart()
@@ -228,7 +226,6 @@ while True:
         msg[1] = json.loads(msg_temp)
     except:
         print('convertion is not possible')
-
 
     if "subscribe" in msg[1]:
         if ID in subscribers:
@@ -276,20 +273,22 @@ while True:
             send_supervisors()
 
     elif "attend" in msg[1]:
-        print('attending')
+        print('attending' + msg[1]['name]'])
         for su in supervisors:
             if ID in su.getID() and len(help_queue) > 0:
-                print('message is: ' + msg[1]['message'])
-                q = help_queue.pop(0)
-                print(q.getName() + ' is poppad')
-                att_message = {"attending": True, "message":msg[1]['message']}
-                att_messageJSON = json.dumps(att_message)
-                for ide in q.getID():
-                    send_service([ide, bytes(att_messageJSON, 'UTF-8')])
-                del q
-                gui.update_queue(help_queue)
-                send_queue()
-                msg = None
+                print('name in message is: ' + msg[1]['name'])
+                if msg[1]['name'] == help_queue[0].getName():
+                    print('message is: ' + msg[1]['message'])
+                    q = help_queue.pop(0)
+                    print(q.getName() + ' is poppad')
+                    att_message = {'id': serverID, "attending": True, "message": msg[1]['message']}
+                    att_messageJSON = json.dumps(att_message)
+                    for ide in q.getID():
+                        send_service([ide, bytes(att_messageJSON, 'UTF-8')])
+                    del q
+                    gui.update_queue(help_queue)
+                    send_queue()
+                    msg = None
 
     elif "" in msg[1] or "{}" or "{""}" in msg[1]:
         for a in help_queue:
