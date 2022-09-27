@@ -84,7 +84,6 @@ public class ClientLogic {
 
         enterQueueRequest(socket);
 
-
     }
 
     public ArrayList<String> getStudents(){
@@ -184,7 +183,6 @@ public class ClientLogic {
                         gui.attendNotifier(true, msg);
 
                     }
-
 
                     String heartbeatmsg = "{}";
                     System.out.println("Sending heatbeat");
