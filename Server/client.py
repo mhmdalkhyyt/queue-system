@@ -56,7 +56,6 @@ class GUI(threading.Thread):
     def queue_button(self):
         name = self.name_box.get(1.0, tkinter.END)
         name = name[:-1]
-        client.socket.send_json({'enterQueue': True, 'name': name})
 
         for x in range(len(arg) - 1):
             client.socket.send_json({'enterQueue': True, 'name': name})
