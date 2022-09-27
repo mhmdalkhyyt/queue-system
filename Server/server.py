@@ -125,6 +125,7 @@ class HeartBeat():
                     elif t.getHeartbeat() < (time.time() - 5.0):
                         for d in t.getID():
                             sendText = {'id': serverID}
+                            sendText = json.dumps(sendText)
                             sendText = bytes(sendText, 'UTF-8')
                             send_service([d, sendText])
                     else:
@@ -145,6 +146,7 @@ class HeartBeat():
                         for d in sup.getID():
                             #send_service([d, b"{'id': serverID}"])
                             sendText = {'id': serverID}
+                            sendText = json.dumps(sendText)
                             sendText = bytes(sendText, 'UTF-8')
                             send_service([d, sendText])
                     else:
