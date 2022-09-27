@@ -1,6 +1,7 @@
 import tkinter
 from time import sleep
 import zmq
+import sys
 import os
 from tkinter import *
 import threading
@@ -60,7 +61,6 @@ class GUI(threading.Thread):
         heart_thread = threading.Thread(target=heartbeat)
         heart_thread.start()
 
-
     def attend_button(self):
 
         msg = self.msgbox.get(1.0, tkinter.END)
@@ -78,7 +78,8 @@ class GUI(threading.Thread):
         self.name_box = tkinter.Text(self.root, height=1, width=15)
         self.name_box.pack(padx=20)
         self.button_frame = tkinter.Frame(self.root)
-        self.s_button = tkinter.Button(self.button_frame, text='Supervise', font=('Arial', 16), command=self.supervise_button_m)
+        self.s_button = tkinter.Button(self.button_frame, text='Supervise', font=('Arial', 16),
+                                       command=self.supervise_button_m)
         self.s_button.grid(row=0, column=0)
         self.a_button = tkinter.Button(self.button_frame, text='Attend', font=('Arial', 16), command=self.attend_button)
         self.a_button.grid(row=0, column=1)
@@ -98,8 +99,10 @@ class GUI(threading.Thread):
         socket.send_json({'subscribe': True})
         self.root.mainloop()
 
+
 context = zmq.Context()
 socket = context.socket(zmq.DEALER)
+
 
 def heartbeat():
     while (True):
@@ -107,15 +110,18 @@ def heartbeat():
         socket.send_json('')
 
 
+arg = sys.argv
+for port in enumerate(arg, start=1):
+    print(port[1])
+    socket.connect('tcp://127.0.0.1:' + str(port[1]))
 # ------------------------------------------
 # Select the correct line for online or local communication
 # ------------------------------------------
 # socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
-socket.connect('tcp://127.0.0.1:7000')
+#socket.connect('tcp://127.0.0.1:7000')
 # ------------------------------------------
 gui = GUI()
 print('gui complete')
-
 
 while True:
     message = socket.recv_json()
@@ -136,6 +142,5 @@ while True:
         print(message)
         x = [e["name"] for e in message['supervisors']]
         gui.update_supervisors(x)
-
 
 # # source venv/bin/activate

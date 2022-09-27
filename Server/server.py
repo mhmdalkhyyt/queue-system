@@ -201,7 +201,7 @@ backend_socket = context.socket(zmq.ROUTER)
 # socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
 
 arg = sys.argv
-print(arg[1])
+
 backend_socket.bind('tcp://127.0.0.1:' + arg[1])
 
 # ------------------------------------------
