@@ -111,7 +111,6 @@ class FLClient(object):
         self.sequence = 0
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.DEALER)  # DEALER
-        self.monitor_socket = self.socket.get_monitor_socket()
 
     def connect(self, endpoint):
         self.socket.connect(endpoint)
