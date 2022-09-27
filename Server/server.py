@@ -214,7 +214,6 @@ queueDict = dict()
 subscribers = list()
 help_queue = list()
 supervisors = list()
-# setKickoutTime(15.0)
 
 ticketNumber = 1
 gui = GUI()
@@ -227,6 +226,7 @@ while True:
     msg_temp = msg[0]
     msg[0] = binascii.hexlify(msg_temp).decode('ascii')
     msg_temp = msg[1]
+    print(msg[1])
     try:
         msg_temp = msg_temp.decode('UTF-8')
         msg[1] = json.loads(msg_temp)
