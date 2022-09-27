@@ -149,8 +149,6 @@ class HeartBeat():
 
         self.heartThreadQ.start()
 
-    def stopHeartBeats(self):
-        self.heartThreadQ.kill()
 
 
 gui = GUI()
