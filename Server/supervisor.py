@@ -64,16 +64,15 @@ class GUI(threading.Thread):
         name = name[:-1]
         for x in range(len(arg) - 1):
             client.socket.send_json({'supervisor': True, 'name': name})
-
         heartb.startHeartBeats()
 
     def attend_button(self):
-
         msg = self.msgbox.get(1.0, tkinter.END)
         msg = msg[:-1]
         next_student = str(queuelist[0])
         print('next is ' + next_student)
-        client.socket.send_json({"attend": True, "name": next_student, "message": msg})
+        for x in range(len(arg) - 1):
+            client.socket.send_json({'attend': True, 'name': next_student, 'message': msg})
 
     def show_msg(self, string):
         messagebox.showinfo(title='Incoming message', message=string)
@@ -85,7 +84,6 @@ class GUI(threading.Thread):
         self.root.geometry('500x800')
         self.first_label = tkinter.Label(self.root, text='Enter your name:', font=('Arial', 18))
         self.first_label.pack(padx=20, pady=5)
-
         self.name_box = tkinter.Text(self.root, height=1, width=15)
         self.name_box.pack(padx=20)
         self.button_frame = tkinter.Frame(self.root)
@@ -96,15 +94,11 @@ class GUI(threading.Thread):
         self.a_button.grid(row=0, column=1, padx=5)
         self.msgbox = tkinter.Text(self.button_frame, height=1, width=20)
         self.msgbox.grid(row=0, column=2, padx=5)
-
         self.button_frame.pack(pady=10)
-
         self.queue_box = tkinter.Text(self.root, height=18, font=('Arial', 16))
         self.queue_box.pack(padx=20, pady=10)
-
         self.second_label = tkinter.Label(self.root, text='Supervisors:', font=('Arial', 18))
         self.second_label.pack(padx=20)
-
         self.su_box = tkinter.Text(self.root, height=4, font=('Arial', 16))
         self.su_box.pack(padx=20, pady=20)
         # socket.send_json({'subscribe': True})
@@ -137,31 +131,26 @@ class HeartBeat():
 
         while True:
             aliveservers = len(serverlist)
-            sleep(2)
             for x in serverlist:
-                if x[2]:
+                if bool(x[2]):  # the server status is True
                     if x[1] < (time.time() - 30.0):
                         print('Server ' + x[0] + ' has disconnected')
-                        x[2] = False
+                        x[2] = False  # server status sets to False
                         aliveservers -= 1
-                        print('Alive servers is: ' + str(aliveservers))
+
                 else:
                     aliveservers -= 1
-
                 if aliveservers == 0:
                     gui.show_msg('All servers has disconnected')
                     heartb.stopHeartBeats()
-
-
+            sleep(2)
 
     def startHeartBeats(self):
 
         self.heartThreadQ.start()
 
     def stopHeartBeats(self):
-        self.heartThreadQ.stop()
-
-
+        self.heartThreadQ.kill()
 
 
 gui = GUI()
@@ -170,22 +159,11 @@ print('gui complete')
 heartb = HeartBeat()
 queuelist = list()
 serverlist = list()
-
-# Create new freelance client object
 client = FLClient()
-
 arg = sys.argv
 for endpoint in sys.argv[1:]:
     client.connect('tcp://127.0.0.1:' + str(endpoint))
 
-
-
-
-def heartbeat():
-    while (True):
-        sleep(3)
-        # for x in range (len(arg)-1):
-        #     client.socket.send_json('')
 
 # ------------------------------------------
 # Select the correct line for online or local communication
@@ -197,8 +175,8 @@ def heartbeat():
 
 while True:
     message = client.socket.recv_json()
-    server_id = message['id']
-    for server in serverlist:
+    server_id = message['serverId']
+    for server in serverlist:  # updates time since last connection and sets server status to True
         if server[0] == str(server_id):
             server[1] = time.time()
             server[2] = True
@@ -207,7 +185,6 @@ while True:
     if 'ticket' in message:
         print('got ticket')
         print(message, sep='\n')
-        # socket.send_json({"attend": True})
 
     elif 'queue' in message:
         print('got queue')

@@ -144,7 +144,6 @@ class HeartBeat():
 
                     elif sup.getHeartbeat() < (time.time() - 5.0):
                         for d in sup.getID():
-                            #send_service([d, b"{'id': serverID}"])
                             sendText = {'serverId': serverID}
                             sendText = json.dumps(sendText)
                             sendText = bytes(sendText, 'UTF-8')
@@ -280,7 +279,7 @@ while True:
             send_supervisors()
 
     elif "attend" in msg[1]:
-        print('attending' + msg[1]['name]'])
+        print('attending' + msg[1]['name'])
         for su in supervisors:
             if ID in su.getID() and len(help_queue) > 0:
                 print('name in message is: ' + msg[1]['name'])
@@ -298,7 +297,7 @@ while True:
                     msg = None
 
     elif "" in msg[1] or "{}" in msg[1] or "{""}" in msg[1] or '' in msg[1]:
-        print('Got heartbeat from client')
+
         for a in help_queue:
             if ID in a.getID():
                 a.setHeartbeat()
