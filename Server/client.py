@@ -115,6 +115,7 @@ class HeartBeat():
         self.heartThreadQ = threading.Thread(target=self.heartbeatQ)
 
     def heartbeatQ(self):
+        sendMsg = True
 
         while True:
             aliveservers = len(serverlist)
@@ -127,9 +128,9 @@ class HeartBeat():
 
                 else:
                     aliveservers -= 1
-                if aliveservers == 0:
+                if aliveservers == 0 and sendMsg:
                     gui.show_msg('All servers has disconnected')
-                    heartb.stopHeartBeats()
+                    sendMsg = False
             sleep(2)
 
     def startHeartBeats(self):
