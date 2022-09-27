@@ -170,7 +170,6 @@ def send_queue():
 
     send_dict = {'serverId': serverID, 'queue': sendlist}
     json_sendlist = json.dumps(send_dict)
-    print(json_sendlist)
     for queuer in subscribers:
         send_service([queuer, bytes(json_sendlist, 'UTF-8')])
 
@@ -185,7 +184,6 @@ def send_supervisors():
 
     send_dict = {'serverId': serverID, 'supervisors': sendlist_su}
     json_sendlist = json.dumps(send_dict)
-    print(json_sendlist)
     for queuer in subscribers:
         send_service([queuer, bytes(json_sendlist, 'UTF-8')])
 
@@ -219,7 +217,6 @@ while True:
     msg_temp = msg[0]
     msg[0] = binascii.hexlify(msg_temp).decode('ascii')
     msg_temp = msg[1]
-    print(msg[1])
     try:
         msg_temp = msg_temp.decode('UTF-8')
         msg[1] = json.loads(msg_temp)
@@ -279,7 +276,7 @@ while True:
                 if msg[1]['name'] == help_queue[0].getName():
                     print('message is: ' + msg[1]['message'])
                     q = help_queue.pop(0)
-                    print(q.getName() + ' is poppad')
+                    print(q.getName() + ' is popped from queue')
                     att_message = {'serverId': serverID, "attending": True, "message": msg[1]['message']}
                     att_messageJSON = json.dumps(att_message)
                     for ide in q.getID():

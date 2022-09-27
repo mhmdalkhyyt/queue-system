@@ -70,7 +70,7 @@ class GUI(threading.Thread):
         msg = self.msgbox.get(1.0, tkinter.END)
         msg = msg[:-1]
         next_student = str(queuelist[0])
-        print('next is ' + next_student)
+        print('next student is ' + next_student)
         for x in range(len(arg) - 1):
             client.socket.send_json({'attend': True, 'name': next_student, 'message': msg})
 
@@ -153,7 +153,6 @@ class HeartBeat():
 
 gui = GUI()
 sleep(1)
-print('gui complete')
 heartb = HeartBeat()
 queuelist = list()
 serverlist = list()
@@ -190,10 +189,6 @@ while True:
         print('got queue')
         print(message)
         x = [e["name"] for e in message['queue']]
-        print(x)
-        for name in x:
-            if name not in queuelist:
-                queuelist.append(name)
         gui.update_queue(queuelist)
 
 

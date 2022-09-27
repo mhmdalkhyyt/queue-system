@@ -88,7 +88,6 @@ class GUI(threading.Thread):
         self.su_box = tkinter.Text(self.root, height=4, font=('Arial', 12))
         self.su_box.pack(padx=20, pady=20)
 
-
         self.root.mainloop()
 
 
@@ -137,11 +136,8 @@ class HeartBeat():
         self.heartThreadQ.start()
 
 
-
-
 gui = GUI()
 sleep(1)
-print('gui complete')
 heartb = HeartBeat()
 queuelist = list()
 serverlist = list()
