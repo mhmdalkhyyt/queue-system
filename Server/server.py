@@ -298,8 +298,6 @@ while True:
 
     elif "" in msg[1] or "{}" in msg[1] or "{""}" in msg[1] or '' in msg[1]:
 
-        print('Got heartbeat')
-
         for a in help_queue:
             if ID in a.getID():
                 a.setHeartbeat()

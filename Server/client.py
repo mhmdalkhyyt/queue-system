@@ -88,7 +88,7 @@ class GUI(threading.Thread):
         self.su_box = tkinter.Text(self.root, height=4, font=('Arial', 16))
         self.su_box.pack(padx=20, pady=20)
 
-        client.socket.send_json({'subscribe': True})
+
         self.root.mainloop()
 
 
@@ -157,7 +157,6 @@ for endpoint in sys.argv[1:]:
 # socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
 # socket.connect('tcp://127.0.0.1:' + arg[1])
 # ------------------------------------------
-gui = GUI()
 
 while True:
     message = client.socket.recv_json()
@@ -187,5 +186,9 @@ while True:
         print('attended')
         gui.show_attend_msg(message['message'])
         print(message)
+
+    else:
+        for x in range(len(arg) - 1):
+            client.socket.send_json("{}")
 
 # # source venv/bin/activate
