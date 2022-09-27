@@ -166,7 +166,7 @@ while True:
             server[1] = time.time()
             if server[1] == False:
                 server[2] = True
-                gui.supervise_button_m()
+                gui.queue_button()
     print(serverlist)
     if 'ticket' in message:
         print('got ticket')
