@@ -36,15 +36,15 @@ class GUI(threading.Thread):
 
         if self.queue_box is not None:
             self.queue_box.delete(1.0, END)
-        self.user_name = self.name_box.get(1.0, tkinter.END)
-        self.user_name = self.user_name[:-1]
-        i = 1
-        for x in d:
-            if x == self.user_name:
-                self.queue_box.insert(END, str(i) + ': ' + x + '           <----- You' + '\n')
-            else:
-                self.queue_box.insert(END, str(i) + ': ' + x + '\n')
-            i = i + 1
+            user_name = self.name_box.get(1.0, tkinter.END)
+            user_name = user_name[:-1]
+            i = 1
+            for x in d:
+                if x == user_name:
+                    self.queue_box.insert(END, str(i) + ': ' + x + '           <----- You' + '\n')
+                else:
+                    self.queue_box.insert(END, str(i) + ': ' + x + '\n')
+                i = i + 1
 
     def update_supervisors(self, d):
         if self.su_box is not None:
@@ -189,7 +189,7 @@ while True:
         print('got queue')
         print(message)
         x = [e["name"] for e in message['queue']]
-        gui.update_queue(queuelist)
+        gui.update_queue(x)
 
 
     elif 'supervisors' in message:
