@@ -170,6 +170,11 @@ public class GUI {
     public void getStudentList(ArrayList<String> stringArrayList){
         studentArr = stringArrayList;
     }
+
+    public void notifyServerDisconnected(){
+        JOptionPane.showMessageDialog(null, "NEW favorite SERVER");
+
+    }
 }
 
 
