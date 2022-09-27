@@ -1,6 +1,7 @@
 import tkinter
 from time import sleep
 import zmq
+import sys
 import os
 from tkinter import *
 from tkinter import messagebox
@@ -99,12 +100,13 @@ def heartbeat():
         socket.send_json('')
 
 
+arg = sys.argv
 
 # ------------------------------------------
 # Select the correct line for online or local communication
 # ------------------------------------------
 # socket.connect('tcp://tinyqueue.cognitionreversed.com:5556')
-socket.connect('tcp://127.0.0.1:7000')
+socket.connect('tcp://127.0.0.1:' + arg[1])
 # ------------------------------------------
 gui = GUI()
 
