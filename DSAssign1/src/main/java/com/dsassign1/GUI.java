@@ -12,6 +12,8 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.concurrent.Flow;
 
+//Todo Gui should prompt all servers disconnected
+
 /**
  *
  * @author muham
