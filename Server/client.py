@@ -64,6 +64,9 @@ class GUI(threading.Thread):
     def show_attend_msg(self, string):
         messagebox.showinfo(title='Supervisor is here', message=string)
 
+    def show_msg(self, string):
+        messagebox.showinfo(title='Incoming message', message=string)
+
     def run(self):
         self.root = Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.callback)
