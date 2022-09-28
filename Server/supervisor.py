@@ -10,7 +10,7 @@ from tkinter import *
 import threading
 
 GLOBAL_TIMEOUT = 2500
-
+ # Todo attend queuelist out of range
 
 class GUI(threading.Thread):
 
@@ -71,7 +71,7 @@ class GUI(threading.Thread):
         msg = msg[:-1]
         next_student = str(queuelist[0])
         print('next student is ' + next_student)
-        for x in range(len(arg) - 1):
+        for val in range(len(arg) - 1):
             client.socket.send_json({'attend': True, 'name': next_student, 'message': msg})
 
     def show_msg(self, string):

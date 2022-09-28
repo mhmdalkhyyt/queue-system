@@ -184,7 +184,8 @@ while True:
 
     elif 'attending' in message:
         print('attended')
-        gui.show_attend_msg(message['message'])
+        if message['name'] == gui.name_box[:-1]:
+            gui.show_attend_msg(message['message'])
         print(message)
 
     else:
