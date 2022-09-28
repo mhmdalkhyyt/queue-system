@@ -61,6 +61,11 @@ class GUI(threading.Thread):
             client.socket.send_json({'enterQueue': True, 'name': name})
         heartb.startHeartBeats()
 
+    def getUserName(self):
+        name = self.name_box.get(1.0, tkinter.END)
+        name = name[:-1]
+        return name
+
     def show_attend_msg(self, string):
         messagebox.showinfo(title='Supervisor is here', message=string)
 
@@ -183,8 +188,11 @@ while True:
         gui.update_supervisors(x)
 
     elif 'attending' in message:
+        print(message)
         print('attended')
-        if message['name'] == gui.name_box[:-1]:
+        print(message['name'])
+        print(str(message['name']))
+        if str(message['name']) == gui.getUserName():
             gui.show_attend_msg(message['message'])
         print(message)
 

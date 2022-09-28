@@ -278,7 +278,7 @@ while True:
                     print('message is: ' + msg[1]['message'])
                     q = help_queue.pop(0)
                     print(q.getName() + ' is popped from queue')
-                    att_message = {'serverId': serverID, "attending": True, "message": msg[1]['message']}
+                    att_message = {'serverId': serverID, "attending": True, 'name': msg[1]['name'], "message": msg[1]['message']}
                     att_messageJSON = json.dumps(att_message)
                     for ide in q.getID():
                         send_service([ide, bytes(att_messageJSON, 'UTF-8')])
