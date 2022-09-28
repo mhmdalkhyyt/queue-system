@@ -117,7 +117,8 @@ class HeartBeat():
 
                     elif t.getHeartbeat() < (time.time() - 5.0):
                         for d in t.getID():
-                            print('Sent heartbeat request to ' + t.getName() + ', time since heartbeat: ' + str(time.time() - t.getHeartbeat()))
+                            print('Sent heartbeat request to ' + t.getName() + ', time since heartbeat: ' + str(
+                                time.time() - t.getHeartbeat()))
                             sendText = {'serverId': serverID}
                             sendText = json.dumps(sendText)
                             sendText = bytes(sendText, 'UTF-8')
@@ -278,22 +279,16 @@ while True:
                     print('message is: ' + msg[1]['message'])
                     q = help_queue.pop(0)
                     print(q.getName() + ' is popped from queue')
-                    att_message = {'serverId': serverID, "attending": True, "name": msg[1]['name'], "message": msg[1]['message']}
+                    att_message = {'serverId': serverID, "attending": True, "supervisor": su.getName(),
+                                   "name": msg[1]['name'], "message": msg[1]['message']}
                     att_messageJSON = json.dumps(att_message)
                     for ide in subscribers:
                         send_service([ide, bytes(att_messageJSON, 'UTF-8')])
-
-                    # send_dict = {'serverId': serverID, 'supervisors': sendlist_su}
-                    # json_sendlist = json.dumps(send_dict)
-                    # for queuer in subscribers:
-                    #     send_service([queuer, bytes(json_sendlist, 'UTF-8')])
-
                     del q
                     gui.update_queue(help_queue)
                     send_queue()
                     msg = None
 
-    #elif "" in msg[1] or "{}" in msg[1] or "{""}" in msg[1] or '' in msg[1]:
     else:
         print('Sent from ' + msg[0])
         for a in help_queue:

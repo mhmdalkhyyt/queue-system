@@ -127,7 +127,7 @@ class HeartBeat():
             aliveservers = len(serverlist)
             for x in serverlist:
                 if bool(x[2]):  # the server status is True
-                    if x[1] < (time.time() - 10.0):
+                    if x[1] < (time.time() - 60.0):
                         print('Server ' + x[0] + ' has disconnected')
                         x[2] = False  # server status sets to False
                         aliveservers -= 1
@@ -147,6 +147,8 @@ class HeartBeat():
 gui = GUI()
 sleep(1)
 heartb = HeartBeat()
+sx = list()
+qx = list()
 queuelist = list()
 serverlist = list()
 client = FLClient()
@@ -192,7 +194,11 @@ while True:
         if str(message['name']) == gui.getUserName():
             gui.show_attend_msg(message['message'])
 
+        for i in range(len(sx)):
+            if str(message['supervisor']) == sx[i]:
+                sx[i] = sx[i] + '       is attendeding ' + str(message['name'])
 
+        gui.update_supervisors(sx)
 
     else:
         for x in range(len(arg) - 1):
