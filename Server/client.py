@@ -195,10 +195,8 @@ while True:
         print(message)
         if str(message['name']) == gui.getUserName():
             gui.show_attend_msg(message['message'])
-
+        sendsx = sx
         for i in range(len(sx)):
-
-            sendsx = sx
             if str(message['supervisor']) == sx[i]:
                 sendsx[i] = sx[i] + '       is attendeding ' + str(message['name'])
 
