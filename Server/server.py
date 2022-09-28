@@ -292,12 +292,12 @@ while True:
         print('Sent from ' + msg[0])
         for a in help_queue:
             if ID in a.getID():
-                print('Updated heartbeat record for ' + a.getName())
+                print('Updated heartbeat record for ' + a.getName() + ' and msg is ' + msg[1])
                 a.setHeartbeat()
 
         for a in supervisors:
             if ID in a.getID():
-                print('Updated heartbeat record for ' + a.getName())
+                print('Updated heartbeat record for ' + a.getName() + ' and msg is ' + msg[1])
                 a.setHeartbeat()
 
 # # source venv/bin/activate
