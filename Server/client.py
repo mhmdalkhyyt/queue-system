@@ -197,10 +197,12 @@ while True:
             gui.show_attend_msg(message['message'])
 
         for i in range(len(sx)):
-            if str(message['supervisor']) == sx[i]:
-                sx[i] = sx[i] + '       is attendeding ' + str(message['name'])
 
-        gui.update_supervisors(sx)
+            sendsx = sx
+            if str(message['supervisor']) == sx[i]:
+                sendsx[i] = sx[i] + '       is attendeding ' + str(message['name'])
+
+        gui.update_supervisors(sendsx)
 
     else:
         for x in range(len(arg) - 1):
