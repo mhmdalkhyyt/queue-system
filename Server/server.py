@@ -117,7 +117,7 @@ class HeartBeat():
 
                     elif t.getHeartbeat() < (time.time() - 5.0):
                         for d in t.getID():
-                            print('Sent heartbeat request to ' + t.getName() + ', time since heartbeat: ' + time.time() - t.getHeartbeat())
+                            print('Sent heartbeat request to ' + t.getName() + ', time since heartbeat: ' + str(time.time() - t.getHeartbeat()))
                             sendText = {'serverId': serverID}
                             sendText = json.dumps(sendText)
                             sendText = bytes(sendText, 'UTF-8')
