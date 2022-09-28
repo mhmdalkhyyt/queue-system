@@ -59,7 +59,7 @@ class GUI(threading.Thread):
 
         for x in range(len(arg) - 1):
             client.socket.send_json({'enterQueue': True, 'name': name})
-        heartb.startHeartBeats()
+
 
     def getUserName(self):
         name = self.name_box.get(1.0, tkinter.END)
@@ -155,6 +155,8 @@ client = FLClient()
 arg = sys.argv
 for endpoint in sys.argv[1:]:
     client.connect('tcp://127.0.0.1:' + str(endpoint))
+
+heartb.startHeartBeats()
 
 # ------------------------------------------
 # Select the correct line for online or local communication
