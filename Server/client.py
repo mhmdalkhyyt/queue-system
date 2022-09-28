@@ -122,7 +122,7 @@ class HeartBeat():
             aliveservers = len(serverlist)
             for x in serverlist:
                 if bool(x[2]):  # the server status is True
-                    if x[1] < (time.time() - 30.0):
+                    if x[1] < (time.time() - 10.0):
                         print('Server ' + x[0] + ' has disconnected')
                         x[2] = False  # server status sets to False
                         aliveservers -= 1
