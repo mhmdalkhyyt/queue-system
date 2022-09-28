@@ -42,7 +42,7 @@ class GUI(threading.Thread):
         self.root = Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.callback)
         self.root.title("Queue server on port: " + arg[1])
-        self.root.geometry('500x600')
+        self.root.geometry('350x500')
         self.button_frame = tkinter.Frame(self.root)
         self.label = Label(self.button_frame, text='Select kickout time:', font=('Arial', 10))
         self.label.grid(row=0, column=0)
@@ -110,13 +110,14 @@ class HeartBeat():
             if len(help_queue) > 0:
                 for t in help_queue:
                     if t.getHeartbeat() < (time.time() - self.kickouttime):
-                        print(self.kickouttime)
+                        print(t.getName() + ' got kicked out, sad')
                         help_queue.remove(t)
                         gui.update_queue(help_queue)
                         send_queue()
 
                     elif t.getHeartbeat() < (time.time() - 5.0):
                         for d in t.getID():
+                            print('Sent heartbeat request to ' + t.getName())
                             sendText = {'serverId': serverID}
                             sendText = json.dumps(sendText)
                             sendText = bytes(sendText, 'UTF-8')
@@ -287,13 +288,15 @@ while True:
                     msg = None
 
     elif "" in msg[1] or "{}" in msg[1] or "{""}" in msg[1] or '' in msg[1]:
-
+        print('Sent from ' + ID)
         for a in help_queue:
             if ID in a.getID():
+                print('Updated heartbeat record for ' + a.getName())
                 a.setHeartbeat()
 
         for a in supervisors:
             if ID in a.getID():
+                print('Updated heartbeat record for ' + a.getName())
                 a.setHeartbeat()
 
 # # source venv/bin/activate
