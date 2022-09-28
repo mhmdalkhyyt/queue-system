@@ -188,8 +188,8 @@ while True:
     elif 'queue' in message:
         print('got queue')
         print(message)
-        x = [e["name"] for e in message['queue']]
-        gui.update_queue(x)
+        queuelist = [e["name"] for e in message['queue']]
+        gui.update_queue(queuelist)
 
 
     elif 'supervisors' in message:
