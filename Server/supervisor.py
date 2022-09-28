@@ -171,7 +171,10 @@ heartb.startHeartBeats()
 
 
 while True:
-    message = client.socket.recv_json()
+    try:
+        message = client.socket.recv_json()
+    except:
+        print('somthing is wrong with the message')
     server_id = message['serverId']
     for server in serverlist:  # updates time since last connection and sets server status to True
         if server[0] == str(server_id):
