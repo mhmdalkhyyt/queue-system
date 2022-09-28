@@ -12,30 +12,17 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 
+//Todo all servers disconnected
+
 
 
 public class ClientLogic {
 
-    class TestServer{
-        long time;
-        String myId;
-        public TestServer(String ID){
-            this.myId = ID;
-            updateTime();
-        }
 
-        void updateTime(){
-            this.time = System.currentTimeMillis()/1000;
-        }
-
-        boolean checkIfDead(){
-            return ((System.currentTimeMillis() / 1000) - this.time) > (20);
-        }
-    }
 
 
     private String[] args;
-    private Prompt prompt;
+
     private GUI gui;
 
     private ArrayList<String> students = new ArrayList<>();
@@ -43,10 +30,7 @@ public class ClientLogic {
 
     private int servers;
 
-    private ArrayList<TestServer> serverList = new ArrayList<>();
-    private ArrayList<Long> serverConnectedTime = new ArrayList<>();
-    private TestServer currServer;
-
+    private ArrayList<String> serverConnected = new ArrayList<>();
 
     public ClientLogic(String[] argStr, GUI gui){
         this.args = argStr;
@@ -60,21 +44,20 @@ public class ClientLogic {
         ZContext context = new ZContext();
         ZMQ.Socket socket = context.createSocket(SocketType.DEALER);
 
+        System.out.println(":::INITIALIZING:::");
+
         for(int i= 0; i < args.length; i++){
             socket.connect(args[i]);
             String subscribe = "{\"subscribe\": true}";
-            System.out.println(subscribe);
+            System.out.println("Sending subscribe message to : " + args[i] + " message sent : " + subscribe);
             socket.send(subscribe);
+            serverConnected.add(args[i]);
 
             servers++;
 
             System.out.println("Servers connected : " + servers);
-            System.out.println("Server connected to : ");
-
         }
 
-        receiveMeth(socket, context);
-        checkConnectivity();
 
 
         while(!gui.isEnterQueue()){
@@ -83,6 +66,9 @@ public class ClientLogic {
         }
 
         enterQueueRequest(socket);
+        handleJSON(socket);
+        //sendheartbeat(socket);
+        //handleJSON(socket);
 
     }
 
@@ -90,55 +76,14 @@ public class ClientLogic {
         return students;
     }
 
-    public void checkConnectivity(){
-        Thread thead2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-               while(true){
-                   boolean currSerDead = false;
-                   int validAliveServer = -1;
-                   for(int i = 0; i < serverList.size(); i++){
-                        if(serverList.get(i).checkIfDead()){
-                            //its dead
-                            if(currServer == serverList.get(i)){
-                                currSerDead = true;
-                            }
-                        }
-                        else{
-                            //is alive
-                            validAliveServer = i;
-                        }
-                   }
-                   if(currSerDead){
-                       if(validAliveServer != -1) {
-                           currServer = serverList.get(validAliveServer);
-                           System.out.println("NEW CURR SERVER : " + currServer.myId);
-                           gui.notifyServerDisconnected();
 
-                       }
-                       else{
-                           //Skicka varningsmeddelande till användare
-                           System.err.println("NO VALID ALIVE SERVERS!!!!");
-                       }
-                   }
-                   try {
-                       Thread.sleep(1000);
-                   } catch (InterruptedException e) {
-                       //throw new RuntimeException(e);
-                   }
-               }
 
-            }
-        });
-        thead2.start();
-    }
 
-    public void receiveMeth(ZMQ.Socket socket, ZContext ctx){
+    public void handleJSON(ZMQ.Socket socket){
 
         Thread thread1 = new Thread(new Runnable() {
             @Override
             public void run() {
-
                 while(true){
 
                     byte[] str = socket.recv();
@@ -147,54 +92,60 @@ public class ClientLogic {
                     JSONArray studentjsArr;
                     JSONArray supervisorjsArr;
                     System.out.println(jsonObject);
+                    String receivId = null;
 
-                    String receivId = jsonObject.getString("serverId");
-                    createServer(receivId).updateTime();
-
-                    if(currServer.myId.equals(receivId)){
-                        if(jsonObject.has("queue")) {
-                            studentjsArr = jsonObject.getJSONArray("queue");
-
-                            for(int i =0; i < studentjsArr.length(); i++){
-                                students.add(studentjsArr.getJSONObject(i).getString("name"));
-                                System.out.println(students.get(i).toString());
-                            }
-
-                            gui.setQueueArea(students);
-                            students.clear();
-                        }
-                        else if (jsonObject.has("supervisors")){
-                            supervisorjsArr = jsonObject.getJSONArray("supervisors");
-
-                            for(int i= 0; i< supervisorjsArr.length(); i++){
-                                supervisors.add(supervisorjsArr.getJSONObject(i).getString("name"));
-                                System.out.println("Supervisors online : " + supervisors.get(i).toString());
-                            }
-                            gui.createSupervisorList(supervisors);
-                            supervisors.clear();
-                        }
-
-
+                    if(jsonObject.has("serverId")){
+                        receivId = jsonObject.getString("serverId").toString();
+                        System.out.printf("Hello im: : : : " + receivId + "\n");
                     }
-                    if (jsonObject.has("attending")){
+
+
+                    if(jsonObject.has("queue")) {
+                        studentjsArr = jsonObject.getJSONArray("queue");
+
+                        for(int i =0; i < studentjsArr.length(); i++){
+                            students.add(studentjsArr.getJSONObject(i).getString("name"));
+                            //System.out.println(students.get(i).toString());
+                        }
+
+                        gui.setQueueArea(students);
+                        students.clear();
+                    }
+                    else if (jsonObject.has("supervisors")){
+                        supervisorjsArr = jsonObject.getJSONArray("supervisors");
+
+                        for(int i= 0; i< supervisorjsArr.length(); i++){
+                            supervisors.add(supervisorjsArr.getJSONObject(i).getString("name"));
+                            //System.out.println("Supervisors online : " + supervisors.get(i).toString());
+                        }
+                        gui.createSupervisorList(supervisors);
+                        supervisors.clear();
+                    }
+                    else if (jsonObject.has("attending")){
                         String msg = jsonObject.getString("message");
 
-                        System.out.println(msg);
+                        //System.out.println(msg);
                         gui.attendNotifier(true, msg);
 
                     }
+                    else if(jsonObject.has("serverId")){
+                        System.out.printf("Server sent you a heartbeat, RESPOND!");
+                        for(int i = 0; i < serverConnected.size(); i++){
+                            String heartbeatmsg = "{}";
+                            socket.send(heartbeatmsg);
+                            System.out.println("Sent heartbeat to server ----> " + serverConnected.get(i));
 
-                    String heartbeatmsg = "{}";
-                    System.out.println("Sending heatbeat");
-                    socket.send(heartbeatmsg);
+                        }
 
+
+                    }
 
                 }
 
             }
-
         });
         thread1.start();
+
     }
 
 
@@ -207,22 +158,24 @@ public class ClientLogic {
         }
     }
 
+    public void sendheartbeat(ZMQ.Socket socket){
+        Thread thisThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
 
-    public TestServer createServer(String serverId){
+                try {
+                    Thread.sleep(4000);
 
-        for(int i = 0; i < serverList.size(); i++){
-            if(serverId.equals(serverList.get(i).myId)){
+                } catch (InterruptedException e) {
+                    //throw new RuntimeException(e);
+                }
 
-                return serverList.get(i);
             }
-        }
-        serverList.add(new TestServer(serverId));
-        if(serverList.size() == 1){
-            currServer = serverList.get(serverList.size()-1);
-        }
-        return serverList.get(serverList.size()-1);
+        });
+        thisThread.start();
 
     }
+
 
 
 }
