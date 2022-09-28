@@ -272,22 +272,23 @@ while True:
 
     elif "attend" in msg[1]:
         print('attending' + msg[1]['name'])
+        supervisor = str()
         for su in supervisors:
-            if ID in su.getID() and len(help_queue) > 0:
-                print('name in message is: ' + msg[1]['name'])
-                if msg[1]['name'] == help_queue[0].getName():
-                    print('message is: ' + msg[1]['message'])
-                    q = help_queue.pop(0)
-                    print(q.getName() + ' is popped from queue')
-                    att_message = {'serverId': serverID, "attending": True, "supervisor": su.getName(),
-                                   "name": msg[1]['name'], "message": msg[1]['message']}
-                    att_messageJSON = json.dumps(att_message)
-                    for ide in subscribers:
-                        send_service([ide, bytes(att_messageJSON, 'UTF-8')])
-                    del q
-                    gui.update_queue(help_queue)
-                    send_queue()
-                    msg = None
+            if ID in su.getID():
+                supervisor = su.getName()
+        if msg[1]['name'] == help_queue[0].getName():
+            print('message is: ' + msg[1]['message'])
+            q = help_queue.pop(0)
+            print(q.getName() + ' is popped from queue')
+            att_message = {'serverId': serverID, "attending": True, "supervisor": supervisor,
+                           "name": msg[1]['name'], "message": msg[1]['message']}
+            att_messageJSON = json.dumps(att_message)
+            for ide in subscribers:
+                send_service([ide, bytes(att_messageJSON, 'UTF-8')])
+            del q
+            gui.update_queue(help_queue)
+            send_queue()
+            msg = None
 
     else:
         print('Sent from ' + msg[0])
