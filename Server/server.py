@@ -292,7 +292,8 @@ while True:
         print('Sent from ' + msg[0])
         for a in help_queue:
             if ID in a.getID():
-                print('Updated heartbeat record for ' + a.getName() + ' and msg is ' + msg[1])
+                print('Updated heartbeat record for ' + a.getName())
+                print(msg[1])
                 a.setHeartbeat()
 
         for a in supervisors:
