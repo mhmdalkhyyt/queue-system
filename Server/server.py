@@ -278,10 +278,15 @@ while True:
                     print('message is: ' + msg[1]['message'])
                     q = help_queue.pop(0)
                     print(q.getName() + ' is popped from queue')
-                    att_message = {'serverId': serverID, "attending": True, 'name': msg[1]['name'], "message": msg[1]['message']}
+                    att_message = {'serverId': serverID, "attending": True, "name": msg[1]['name'], "message": msg[1]['message']}
                     att_messageJSON = json.dumps(att_message)
                     for ide in subscribers:
                         send_service([ide, bytes(att_messageJSON, 'UTF-8')])
+
+                    # send_dict = {'serverId': serverID, 'supervisors': sendlist_su}
+                    # json_sendlist = json.dumps(send_dict)
+                    # for queuer in subscribers:
+                    #     send_service([queuer, bytes(json_sendlist, 'UTF-8')])
 
                     del q
                     gui.update_queue(help_queue)

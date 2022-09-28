@@ -178,23 +178,21 @@ while True:
     elif 'queue' in message:
         print('got queue')
         print(message)
-        x = [e["name"] for e in message['queue']]
-        gui.update_queue(x)
+        qx = [e["name"] for e in message['queue']]
+        gui.update_queue(qx)
 
     elif 'supervisors' in message:
         print('got supervisors')
         print(message)
-        x = [e["name"] for e in message['supervisors']]
-        gui.update_supervisors(x)
+        sx = [e["name"] for e in message['supervisors']]
+        gui.update_supervisors(sx)
 
     elif 'attending' in message:
         print(message)
-        print('attended')
-        print(message['name'])
-        print(str(message['name']))
         if str(message['name']) == gui.getUserName():
             gui.show_attend_msg(message['message'])
-        print(message)
+
+
 
     else:
         for x in range(len(arg) - 1):
