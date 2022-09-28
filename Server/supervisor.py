@@ -181,7 +181,6 @@ while True:
             server[1] = time.time()
             if server[1] == False:
                 server[2] = True
-                gui.supervise_button_m()
     print(serverlist)
 
     if 'ticket' in message:
