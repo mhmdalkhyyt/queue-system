@@ -11,18 +11,6 @@ package com.dsassign1;
  * @author muham
  */
 
-import org.zeromq.ZMQ;
-import org.zeromq.*;
-import org.zeromq.ZContext;
-import org.zeromq.ZMQ.Socket;
-import org.json.*;
-
-import javax.swing.text.html.HTMLDocument;
-import java.util.ArrayList;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 
 public class DSAssign1
@@ -31,8 +19,6 @@ public class DSAssign1
       GUI gui = new GUI();
 
        ClientLogic cLogic;
-
-
 
            if(args.length > 0){
 
@@ -43,7 +29,6 @@ public class DSAssign1
                 System.out.println("Please specify URL");
 
             }
-
 
     }
 

@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -37,8 +38,6 @@ public class GUI {
     private ArrayList<String> studentArr = new ArrayList<>();
 
     private ArrayList<String> supervisors = new ArrayList<>();
-
-
 
     private boolean enterQueue = false;
 
@@ -94,12 +93,17 @@ public class GUI {
 
     private void btnEnterQueueActionPerformed(ActionEvent evt){
         enterQueue = true;
+
     }
+
 
 
     public boolean isEnterQueue() {
+
         return enterQueue;
     }
+
+
 
 
     public JPanel createStudentPromptPanel(){
@@ -152,7 +156,7 @@ public class GUI {
 
 
 
-    public void attendNotifier(boolean beingNotified, String supervisor ,String msg , String studentName) {
+    public void attendNotifier(boolean beingNotified, String msg , String supervisor , String studentName) {
         //JFrame notifierFrame = new JFrame();
         //JPanel panel = new JPanel();
 
@@ -160,6 +164,7 @@ public class GUI {
         if (Objects.equals(nameTextField.getText(), studentName)) {
             if (beingNotified) {
                 JOptionPane.showMessageDialog(null, msg);
+                TopLevelFrame.dispatchEvent(new WindowEvent(TopLevelFrame, WindowEvent.WINDOW_CLOSING));
             }
 
         }

@@ -19,9 +19,6 @@ import java.util.ArrayList;
 
 public class ClientLogic {
 
-
-
-
     private String[] args;
 
     private GUI gui;
@@ -50,34 +47,28 @@ public class ClientLogic {
         for(int i= 0; i < args.length; i++){
             socket.connect(args[i]);
             String subscribe = "{\"subscribe\": true}";
-            System.out.println("Sending subscribe message to : " + args[i] + " message sent : " + subscribe);
+            //System.out.println("Sending subscribe message to : " + args[i] + " message sent : " + subscribe);
             socket.send(subscribe);
             serverConnected.add(args[i]);
 
             servers++;
 
-            System.out.println("Servers connected : " + servers);
+            //System.out.println("Servers connected : " + servers);
         }
-
+        handleJSON(socket);
 
 
         while(!gui.isEnterQueue()){
             //wait for request to stand in queue
             Thread.sleep(1);
+
         }
 
         enterQueueRequest(socket);
         handleJSON(socket);
-        //sendheartbeat(socket);
-        //handleJSON(socket);
+
 
     }
-
-    public ArrayList<String> getStudents(){
-        return students;
-    }
-
-
 
 
     public void handleJSON(ZMQ.Socket socket){
@@ -126,16 +117,21 @@ public class ClientLogic {
                         String msg = jsonObject.getString("message");
                         String supervisor = jsonObject.getString("supervisor");
                         String nameMsg = jsonObject.getString("name");
+                        ArrayList<String> newList = supervisors;
+
+
                         //send nameMsg to gui to show who the supervisor is attending
 
                         for(int i = 0; i < supervisors.size(); i++){
                             if(supervisor.equals(supervisors.get(i))){
                                 System.err.println("DEN KOMMER IN HÄR");
-                                supervisors.set(i, supervisor + " is attending " + nameMsg);
+
+                                newList.set(i, supervisor + " is attending " + nameMsg);
                                 System.err.println("Supervisors array contains : " + supervisors.get(i));
-                                gui.updateSupervisorList(supervisors);
+
                             }
                         }
+                        gui.updateSupervisorList(newList);
 
                         //System.out.println(msg);
                         gui.attendNotifier(true, msg, supervisor, nameMsg);
@@ -146,7 +142,7 @@ public class ClientLogic {
                         for(int i = 0; i < serverConnected.size(); i++){
                             String heartbeatmsg = "{}";
                             socket.send(heartbeatmsg);
-                            System.out.println("Sent heartbeat to server ----> " + serverConnected.get(i));
+                            System.out.println("Sent heartbea  t to server ----> " + serverConnected.get(i));
 
                         }
 
@@ -170,23 +166,7 @@ public class ClientLogic {
         }
     }
 
-    public void sendheartbeat(ZMQ.Socket socket){
-        Thread thisThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
 
-                try {
-                    Thread.sleep(4000);
-
-                } catch (InterruptedException e) {
-                    //throw new RuntimeException(e);
-                }
-
-            }
-        });
-        thisThread.start();
-
-    }
 
 
 
