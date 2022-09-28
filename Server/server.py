@@ -288,7 +288,7 @@ while True:
                     msg = None
 
     elif "" in msg[1] or "{}" in msg[1] or "{""}" in msg[1] or '' in msg[1]:
-        print('Sent from ' + ID)
+        print('Sent from ' + msg[0])
         for a in help_queue:
             if ID in a.getID():
                 print('Updated heartbeat record for ' + a.getName())
