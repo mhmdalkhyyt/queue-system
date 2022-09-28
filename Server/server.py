@@ -280,8 +280,9 @@ while True:
                     print(q.getName() + ' is popped from queue')
                     att_message = {'serverId': serverID, "attending": True, 'name': msg[1]['name'], "message": msg[1]['message']}
                     att_messageJSON = json.dumps(att_message)
-                    for ide in q.getID():
+                    for ide in subscribers:
                         send_service([ide, bytes(att_messageJSON, 'UTF-8')])
+
                     del q
                     gui.update_queue(help_queue)
                     send_queue()
