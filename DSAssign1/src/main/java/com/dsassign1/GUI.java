@@ -8,11 +8,11 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.concurrent.Flow;
+import java.util.Objects;
 
 //Todo Gui should prompt all servers disconnected
+//Todo Connect button to add multiple students
 
 /**
  *
@@ -23,9 +23,9 @@ public class GUI {
 
 
     private JFrame TopLevelFrame = new JFrame(view);
-    private JFrame queueAreaFrame = new JFrame();
 
-    private JLabel clientName = new JLabel();
+
+
     private JLabel nameLable = new JLabel();
     private JTextField nameTextField = new JTextField();
     private JTextArea txtArea = new JTextArea();
@@ -34,17 +34,10 @@ public class GUI {
 
     private JButton btnEnterQueue = new JButton();
 
-    private JList<String> queueList;
-
-    private JList<String> supervisorList;
-
     private ArrayList<String> studentArr = new ArrayList<>();
 
-    private DefaultListModel<String> studentDlm = new DefaultListModel<>();
-    private DefaultListModel<String> supervisorDlm = new DefaultListModel<>();
-
     private ArrayList<String> supervisors = new ArrayList<>();
-    //private JScrollPane queueScroll;
+
 
 
     private boolean enterQueue = false;
@@ -82,12 +75,16 @@ public class GUI {
         txtArea.setText("");
 
         for(int i =0; i < str.size(); i++){
+            if(Objects.equals(str.get(i), nameTextField.getText())){
+                txtArea.append( (i + 1) +  " : " + str.get(i) + "              <------ YOU" + "\n");
+            }else{
+                txtArea.append( (i +1 ) +  " : "  + str.get(i) + " \n");
+            }
 
-            txtArea.append(str.get(i) + " \n");
         }
     }
 
-    public void createSupervisorList(ArrayList<String> str){
+    public void updateSupervisorList(ArrayList<String> str){
         supervisorTxtArea.setText("");
         for(int i =0; i < str.size(); i++){
             supervisorTxtArea.append(str.get(i) + " \n");
@@ -145,6 +142,8 @@ public class GUI {
         panel.setBorder(new TitledBorder("Supervisors"));
         panel.setLayout(new FlowLayout());
 
+        panel.setToolTipText("Supervisor Area");
+
 
         panel.add(supervisorTxtArea);
 
@@ -152,29 +151,19 @@ public class GUI {
     }
 
 
-    public DefaultListModel<String> getDlm(){
-        return studentDlm;
-    }
 
-    public void attendNotifier(boolean beingNotified, String msg){
+    public void attendNotifier(boolean beingNotified, String supervisor ,String msg , String studentName) {
         //JFrame notifierFrame = new JFrame();
         //JPanel panel = new JPanel();
 
 
-        if(beingNotified){
-            JOptionPane.showMessageDialog(null, msg);
+        if (Objects.equals(nameTextField.getText(), studentName)) {
+            if (beingNotified) {
+                JOptionPane.showMessageDialog(null, msg);
+            }
 
         }
 
-
-    }
-
-    public void getStudentList(ArrayList<String> stringArrayList){
-        studentArr = stringArrayList;
-    }
-
-    public void notifyServerDisconnected(){
-        JOptionPane.showMessageDialog(null, "NEW favorite SERVER");
 
     }
 }

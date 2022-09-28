@@ -5,14 +5,15 @@ import org.json.JSONObject;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
-import org.zeromq.ZMsg;
 
 
 import java.util.ArrayList;
-import java.util.Objects;
 
+//Todo Server doesnt display subscribed queue as soon as connected.
+//Todo all servers disconnected.
+//Todo In case a client assigns to queue, and you want to put another student i queue, you have to restart client.
+//Todo send nameMsg to gui to show who supervisor is attending
 
-//Todo all servers disconnected
 
 
 
@@ -105,27 +106,39 @@ public class ClientLogic {
 
                         for(int i =0; i < studentjsArr.length(); i++){
                             students.add(studentjsArr.getJSONObject(i).getString("name"));
-                            //System.out.println(students.get(i).toString());
+
                         }
 
                         gui.setQueueArea(students);
                         students.clear();
                     }
                     else if (jsonObject.has("supervisors")){
+                        supervisors.clear();
                         supervisorjsArr = jsonObject.getJSONArray("supervisors");
 
                         for(int i= 0; i< supervisorjsArr.length(); i++){
                             supervisors.add(supervisorjsArr.getJSONObject(i).getString("name"));
-                            //System.out.println("Supervisors online : " + supervisors.get(i).toString());
                         }
-                        gui.createSupervisorList(supervisors);
-                        supervisors.clear();
+                        gui.updateSupervisorList(supervisors);
+
                     }
                     else if (jsonObject.has("attending")){
                         String msg = jsonObject.getString("message");
+                        String supervisor = jsonObject.getString("supervisor");
+                        String nameMsg = jsonObject.getString("name");
+                        //send nameMsg to gui to show who the supervisor is attending
+
+                        for(int i = 0; i < supervisors.size(); i++){
+                            if(supervisor.equals(supervisors.get(i))){
+                                System.err.println("DEN KOMMER IN HÄR");
+                                supervisors.set(i, supervisor + " is attending " + nameMsg);
+                                System.err.println("Supervisors array contains : " + supervisors.get(i));
+                                gui.updateSupervisorList(supervisors);
+                            }
+                        }
 
                         //System.out.println(msg);
-                        gui.attendNotifier(true, msg);
+                        gui.attendNotifier(true, msg, supervisor, nameMsg);
 
                     }
                     else if(jsonObject.has("serverId")){
@@ -136,7 +149,6 @@ public class ClientLogic {
                             System.out.println("Sent heartbeat to server ----> " + serverConnected.get(i));
 
                         }
-
 
                     }
 
