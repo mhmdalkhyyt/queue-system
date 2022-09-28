@@ -287,7 +287,8 @@ while True:
                     send_queue()
                     msg = None
 
-    elif "" in msg[1] or "{}" in msg[1] or "{""}" in msg[1] or '' in msg[1]:
+    #elif "" in msg[1] or "{}" in msg[1] or "{""}" in msg[1] or '' in msg[1]:
+    else:
         print('Sent from ' + msg[0])
         for a in help_queue:
             if ID in a.getID():
